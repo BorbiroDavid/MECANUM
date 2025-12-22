@@ -1,0 +1,5 @@
+../Core/Src/adc1_itinj.c:58:6:HAL_ADCEx_InjectedConvCpltCallback	1
+../Core/Src/adc1_itinj.c:78:6:InitADCmodule	1
+../Core/Src/adc1_itinj.c:97:6:StartADCmeasurement	1
+../Core/Src/adc1_itinj.c:113:5:CheckADCChannelForDataAvailable	8
+../Core/Src/adc1_itinj.c:150:5:GetADCChannelData	12
