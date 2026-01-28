@@ -112,6 +112,11 @@
 
 #define	RPS_FACTOR		13440000		// Scale factor between rps and period
 
+#define FL 0
+#define FR 1
+#define RL 2
+#define RR 3
+
 #define SANGLE_MAX		8192			// Positive limit for Servo Angle
 #define SANGLE_MIN		-8192			// Negative limit for Servo Angle
 
@@ -119,6 +124,20 @@
 
 #define	TESTSIGN_SIZE	32768			// Test Signal size (max. 32768)
 #define	TESTDNLD_BLRATE	100				// Test Signal Blink Rate
+
+
+#ifndef RPSPI_NSS_FL_Pin
+  #define RPSPI_NSS_FL_Pin GPIO_PIN_1
+#endif
+#ifndef RPSPI_NSS_FR_Pin
+  #define RPSPI_NSS_FR_Pin GPIO_PIN_13
+#endif
+#ifndef RPSPI_NSS_RL_Pin
+  #define RPSPI_NSS_RL_Pin GPIO_PIN_14
+#endif
+#ifndef RPSPI_NSS_RR_Pin
+  #define RPSPI_NSS_RR_Pin GPIO_PIN_15
+#endif
 
 /* USER CODE END PD */
 
@@ -154,15 +173,15 @@ volatile uint16_t mloopTick = 0;			// Main Loop Tick signal
 static uint16_t ctrlLoopCnt = 0;			// Control Loop Period counter
 static uint16_t statTrfCnt = STATTRF_PER - 1;// State Transfer Period counter
 
-//volatile uint16_t ledY0sign = 0;			// Yellow 1 LED Signal
-//volatile uint16_t ledY1sign = 0;			// Yellow 2 LED Signal
-//volatile uint16_t ledY2sign = 0;			// Yellow 3 LED Signal
-//volatile uint16_t ledY3sign = 0;			// Yellow 4 LED Signal
-//volatile uint16_t ledY4sign = 0;			// Yellow 5 LED Signal
-//volatile uint16_t ledY5sign = 0;			// Yellow 6 LED Signal
+volatile uint16_t ledY0sign = 0;			// Yellow 1 LED Signal
+volatile uint16_t ledY1sign = 0;			// Yellow 2 LED Signal
+volatile uint16_t ledY2sign = 0;			// Yellow 3 LED Signal
+volatile uint16_t ledY3sign = 0;			// Yellow 4 LED Signal
+volatile uint16_t ledY4sign = 0;			// Yellow 5 LED Signal
+volatile uint16_t ledY5sign = 0;			// Yellow 6 LED Signal
 volatile uint16_t ledY6sign = 0;			// Yellow 7 LED Signal
 volatile uint16_t ledRsign = 0;				// Red LED Signal
-//volatile uint16_t ledGsign = 0;				// Green LED Signal
+volatile uint16_t ledGsign = 0;				// Green LED Signal
 
 volatile uint8_t usrSw1Block = 0;			// Blocking Period Cnt for User Sw1
 volatile uint8_t usrSw2Block = 0;			// Blocking Period Cnt for User Sw2
@@ -170,7 +189,7 @@ volatile uint8_t usrSw3Block = 0;			// Blocking Period Cnt for User Sw3
 volatile uint8_t usrSw4Block = 0;			// Blocking Period Cnt for User Sw4
 volatile uint8_t usrSw5Block = 0;			// Blocking Period Cnt for User Sw5
 volatile uint8_t usrSw6Block = 0;			// Blocking Period Cnt for User Sw6
-//volatile uint8_t blueSwBlock = 0;			// Blocking Period Cnt for Blue Sw
+volatile uint8_t blueSwBlock = 0;			// Blocking Period Cnt for Blue Sw
 
 volatile uint16_t swsState = 0;				// Switches State
 volatile uint16_t swsStateBk = 0;			// Switches State Backup
@@ -216,8 +235,8 @@ static int16_t motorActValPW = 0;			// Motor Speed Pulse Width (signed)
 static uint16_t motorPWMtop = MPWMPER_MAX;	// PWM Counter Top value
 static uint16_t motorPWMtopBk = MPWMPER_MAX;	// PWM Counter Top value backup
 
-static int16_t dcmCtrlSetp = 0;				// Motor Control SetPoint
-volatile int16_t motorSpeed = 0;			// Motor RPS sampled value
+//static int16_t dcmCtrlSetp = 0;				// Motor Control SetPoint
+//volatile int16_t motorSpeed = 0;			// Motor RPS sampled value
 static int16_t motorAngle = 0;				// Motor Angle
 static int16_t motorExtAngle = 0;			// Motor Extended Angle
 
@@ -259,6 +278,24 @@ static uint16_t testSigOutPnt = 0;			// Test Signal Output Pointer
 static uint16_t testSigReset = OFF;			// Test Signal Reset / Cleared flag
 static uint16_t testStart = OFF;			// Test Start flag
 static uint16_t testStop = OFF;				// Test Stop flag
+
+// 4 motoros kiterjesztés
+volatile int32_t nperAcc[4] = {0}, nperCnt[4] = {0};
+volatile int32_t rpsmVal[4] = {0};
+volatile int16_t rpsNoPulse[4] = {0};
+
+static int16_t dcmCtrlSetp[4] = {0};  // 4 motor alapjele
+volatile int16_t motorSpeed[4] = {0}; // 4 motor mért sebessége
+static int16_t motorActVal[4] = {0};  // 4 motor beavatkozó jele
+static int16_t motorActValBk[4] = {32767, 32767, 32767, 32767};
+
+// PI szabályozó állapotai motoronként
+static double xvalPI[4] = {0.0};
+static double yvalPI[4] = {0.0};
+
+// NSS lábak a 4 szöghelyzet-szenzorhoz
+GPIO_TypeDef* AS_NSS_Ports[4] = { GPIOB, GPIOB, GPIOB, GPIOB };
+uint16_t AS_NSS_Pins[4] = { RPSPI_NSS_FL_Pin, RPSPI_NSS_FR_Pin, RPSPI_NSS_RL_Pin, RPSPI_NSS_RR_Pin };
 
 /* USER CODE END PV */
 
@@ -438,37 +475,30 @@ int main(void)
 	ctrlLoopCnt++;
 	if (ctrlLoopCnt >= samplePeriod)
 	  {
-		/*****  Sampling RPM measurement *****************************************/
+		for (int i = 0; i < 4; i++)
+		    {
+		        // RPM Sampling
+		        if (nperCnt[i] > 0)
+		        {
+		            prim = __get_PRIMASK();
+		            __disable_irq();
+		            uint32_t n_cnt = nperCnt[i];
+		            int32_t n_acc = nperAcc[i];
+		            nperAcc[i] = 0; nperCnt[i] = 0;
+		            if (!prim) __enable_irq();
 
-		// RPM Sampling
-		if (nperCnt > 0)
-		  {
-			// Disabling Global Interrupt
-			prim = __get_PRIMASK();
-		    __disable_irq();
-		    npercnt = nperCnt;
-		    nperacc = nperAcc;
-			nperAcc = 0;
-			nperCnt = 0;
-			if (npercnt > 1)
-				npaval = (float)nperacc / (float)npercnt;
-			else
-				npaval = (float)nperacc;
-			rpsmVal = (int32_t)(RPS_FACTOR / npaval);
-			rpsNoPulse = 0;
-			// Enabling Global Interrupt
-			if (!prim) __enable_irq();
-		  }
-		else
-		  {
-			if (rpsmVal != 0)
-			  {
-				rpsNoPulse++;
-				if (rpsNoPulse > 2)
-					rpsmVal = rpsmVal / 2;
-			  }
-		  }
-		motorSpeed = (int16_t)rpsmVal;
+		            float npaval = (n_cnt > 1) ? (float)n_acc / (float)n_cnt : (float)n_acc;
+		            rpsmVal[i] = (int32_t)(RPS_FACTOR / npaval);
+		            rpsNoPulse[i] = 0;
+		        }
+		        else
+		        {
+		            if (rpsmVal[i] != 0) {
+		                rpsNoPulse[i]++;
+		                if (rpsNoPulse[i] > 2) rpsmVal[i] /= 2;
+		            }
+		        }
+		        motorSpeed[i] = (int16_t)rpsmVal[i];
 
 		/******	AS5047U Angle measurement ***************************************/
 
@@ -646,21 +676,19 @@ int main(void)
 							motorActVal = (int16_t)i32arg;
 						break;
 					case MCTRL_PI:
-						xval = (double)(dcmCtrlSetp - motorSpeed);
-						xtmp = xval + xval / mcRPMPITi - xvalPI;
-						yval = yvalPI + mcRPMPIGain * xtmp;
-						if (yval > WINDUP_MAX)
-							yval = WINDUP_MAX;
-						else if (yval < WINDUP_MIN)
-							yval = WINDUP_MIN;
-						if (yval > (double)ACTVAL_MAX)
-							motorActVal = ACTVAL_MAX;
-						else if (yval < (double)ACTVAL_MIN)
-							motorActVal = ACTVAL_MIN;
-						else
-							motorActVal = (int16_t)yval;
-						yvalPI = yval;
-						xvalPI = xval;
+					  for (int i = 0; i < 4; i++)
+					  {
+						double xval = (double)(dcmCtrlSetp[i] - motorSpeed[i]);
+						double xtmp = xval + xval / mcRPMPITi - xvalPI[i];
+						double yval = yvalPI[i] + mcRPMPIGain * xtmp;
+						 if (yval > WINDUP_MAX) yval = WINDUP_MAX;
+						   else if (yval < WINDUP_MIN) yval = WINDUP_MIN;
+						if (yval > (double)ACTVAL_MAX) motorActVal[i] = ACTVAL_MAX;
+						   else if (yval < (double)ACTVAL_MIN) motorActVal[i] = ACTVAL_MIN;
+						   else motorActVal[i] = (int16_t)yval;
+						yvalPI[i] = yval;
+						xvalPI[i] = xval;
+						}
 						break;
 					case MCTRL_PROP:
 						if (mcRPMPropGainCorr == OFF)
