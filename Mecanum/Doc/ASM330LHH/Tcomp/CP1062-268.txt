@@ -1,0 +1,15 @@
+CP1062-268
+
+input voltage max (Vdc)			1.4
+input current max (A)			1.0
+internal resistance typ (Ω±10%)		1.04
+output Qmax Th = 27°C (W)		0.9
+output Qmax Th = 50°C (W)		1.0
+output ΔTmax  Th = 27°C (W) (°C)	70
+output ΔTmax  Th = 50°C (W) (°C)	77
+
+HOT SIDE LENGTH (mm)			6.2  ±0.3
+COLD SIDE LENGTH(mm)			6.2  ±0.3
+HOT SIDEWIDTH(mm)			6.2  ±0.3
+COLD SIDEWIDTH(mm)			4.2  ±0.3
+THICKNESS(mm)				2.68 ±0.15

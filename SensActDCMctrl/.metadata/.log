@@ -1,0 +1,39 @@
+!SESSION 2026-01-08 13:55:53.012 -----------------------------------------------
+eclipse.buildId=Version 2.0.0
+java.version=21.0.8
+java.vendor=Eclipse Adoptium
+BootLoader constants: OS=win32, ARCH=x86_64, WS=win32, NL=hu_HU
+Command-line arguments:  -os win32 -ws win32 -arch x86_64 -data C:\Users\dborb\Desktop\Erzbeav_1\MECANUM\SensActDCMctrl
+
+!ENTRY com.st.stm32cube.ide.mcu.informationcenter 1 1 2026-01-08 13:55:57.260
+!MESSAGE Log4j2 initialized with config file C:\Users\dborb\Desktop\Erzbeav_1\MECANUM\SensActDCMctrl\.metadata\.log4j2.xml
+
+!ENTRY com.st.stm32cube.ide.mcu.ide 1 1 2026-01-08 13:56:01.036
+!MESSAGE Started RMI Server, listening on port 41337
+
+!ENTRY com.st.stm32cube.ide.mpu.remote.serial 1 1 2026-01-08 13:56:01.676
+!MESSAGE Executed PowerShell command powershell.exe -Command "Get-CimInstance -ClassName Win32_SerialPort | Select-Object -ExpandProperty DeviceID":
+
+
+!ENTRY com.st.stm32cube.ide.mpu.remote.serial 1 1 2026-01-08 13:56:01.678
+!MESSAGE port: 
+!SESSION 2026-01-08 14:14:49.646 -----------------------------------------------
+eclipse.buildId=Version 2.0.0
+java.version=21.0.8
+java.vendor=Eclipse Adoptium
+BootLoader constants: OS=win32, ARCH=x86_64, WS=win32, NL=hu_HU
+Framework arguments:  C:\Users\dborb\Desktop\Erzbeav_1\mecanum_helyi\MecanumMC\Core\Src\main.c
+Command-line arguments:  -os win32 -ws win32 -arch x86_64 C:\Users\dborb\Desktop\Erzbeav_1\mecanum_helyi\MecanumMC\Core\Src\main.c
+
+!ENTRY com.st.stm32cube.ide.mcu.informationcenter 1 1 2026-01-08 14:15:02.418
+!MESSAGE Log4j2 initialized with config file C:\Users\dborb\Desktop\Erzbeav_1\MECANUM\SensActDCMctrl\.metadata\.log4j2.xml
+
+!ENTRY com.st.stm32cube.ide.mpu.remote.serial 1 1 2026-01-08 14:15:05.978
+!MESSAGE Executed PowerShell command powershell.exe -Command "Get-CimInstance -ClassName Win32_SerialPort | Select-Object -ExpandProperty DeviceID":
+
+
+!ENTRY com.st.stm32cube.ide.mpu.remote.serial 1 1 2026-01-08 14:15:05.978
+!MESSAGE port: 
+
+!ENTRY com.st.stm32cube.ide.mcu.ide 1 1 2026-01-08 14:15:06.021
+!MESSAGE Started RMI Server, listening on port 41337
