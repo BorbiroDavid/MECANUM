@@ -33,7 +33,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define	PROGRAM_ID		"Mechanum Car " // Program Version ID
+#define	PROGRAM_ID		"Mechanum_project" // Program Version ID
 
 #define	LEDSIGN_PER		200				// LED Signal Duration (ms)
 #define	SWBLOCK_PER		50				// Switch Block Period (SysTick-s nbr.)
@@ -114,19 +114,6 @@
 #define	TESTSIGN_SIZE	32768			// Test Signal size (max. 32768)
 #define	TESTDNLD_BLRATE	100				// Test Signal Blink Rate
 
-
-#ifndef RPSPI_NSS_FL_Pin
-  #define RPSPI_NSS_FL_Pin GPIO_PIN_1
-#endif
-#ifndef RPSPI_NSS_FR_Pin
-  #define RPSPI_NSS_FR_Pin GPIO_PIN_13
-#endif
-#ifndef RPSPI_NSS_RL_Pin
-  #define RPSPI_NSS_RL_Pin GPIO_PIN_14
-#endif
-#ifndef RPSPI_NSS_RR_Pin
-  #define RPSPI_NSS_RR_Pin GPIO_PIN_15
-#endif
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -151,6 +138,34 @@ UART_HandleTypeDef huart2;
 UART_HandleTypeDef huart6;
 
 /* USER CODE BEGIN PV */
+/* Constant strings ----------------------------------------------------------*/
+
+const char programId[] = PROGRAM_ID; 		// Program Version ID string
+const char horLine28[]   = "----------------------------";   // Horizontal line for communication
+
+/* Private variables ----------------------------------------------------------*/
+
+volatile uint16_t secCnt = 0;				// Second Counter for SysTick
+volatile uint16_t secTick = 0;				// Second Tick signal
+volatile uint16_t mloopTick = 0;			// Main Loop Tick signal
+static uint16_t ctrlLoopCnt = 0;			// Control Loop Period counter
+static uint16_t statTrfCnt = STATTRF_PER - 1;// State Transfer Period counter
+
+static uint16_t lockDataTrf = OFF; 			// Data Transfer Lock On/Off
+
+static uint8_t inmsgBuf2[INMSG_SIZE];		// UART2 Receive Command Buffer
+static uint32_t inmsgPnt2 = 0;				// UART2 Receive Command Pointer
+
+static uint8_t inmsgBuf6[INMSG_SIZE];		// UART6 Receive Command Buffer
+static uint32_t inmsgPnt6 = 0;				// UART6 Receive Command Pointer
+
+volatile uint8_t testMode = 0;				// Test Mode state - Local Mode is default
+volatile int16_t testSignal[TESTSIGN_SIZE];	// Input Test Signal Data array
+static uint16_t testSigInPnt = 0;			// Test Signal Input Pointer - size of the actual Signal
+static uint16_t testSigOutPnt = 0;			// Test Signal Output Pointer
+static uint16_t testSigReset = OFF;			// Test Signal Reset / Cleared flag
+static uint16_t testStart = OFF;			// Test Start flag
+static uint16_t testStop = OFF;
 
 /* USER CODE END PV */
 
@@ -185,6 +200,10 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
+	int status;
+	char message[33];
+
+
 
   /* USER CODE END 1 */
 
@@ -198,36 +217,103 @@ int main(void)
   /* USER CODE END Init */
 
   /* Configure the system clock */
-  SystemClock_Config();
+  	SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
 
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
-  MX_GPIO_Init();
-  MX_DMA_Init();
-  MX_USART2_UART_Init();
-  MX_SPI2_Init();
-  MX_SPI3_Init();
-  MX_TIM1_Init();
-  MX_TIM2_Init();
-  MX_TIM3_Init();
-  MX_TIM4_Init();
-  MX_TIM5_Init();
-  MX_USART6_UART_Init();
-  MX_TIM10_Init();
+	MX_GPIO_Init();
+	MX_DMA_Init();
+	MX_USART2_UART_Init();
+	MX_SPI2_Init();
+	MX_SPI3_Init();
+	MX_TIM1_Init();
+	MX_TIM2_Init();
+	MX_TIM3_Init();
+	MX_TIM4_Init();
+	MX_TIM5_Init();
+	MX_USART6_UART_Init();
+	MX_TIM10_Init();
   /* USER CODE BEGIN 2 */
+  for (uint16_t k = 0; k < TESTSIGN_SIZE; k++) testSignal[k] = 0;
 
+  //Signing in to VCP
+	StartUART2Communication();
+	SendMessageLine ((char *)horLine28);
+	SendMessageLine ((char *)programId);
+	SendMessageLine ((char *)horLine28);
+	strcpy(message,"$I\r");
+	PutsUART2TxData((uint8_t *)message,strlen(message));
+
+/****** Initializing TIMERs ***********************************************/
+
+	/* ????????????????????????????????????????
+	HAL_TIM_Base_Start_IT(&htim10);
+	HAL_TIM_IC_Start_IT(&htim2,TIM_CHANNEL_1);
+	HAL_TIM_Base_Start(&htim4);
+	??????????????????????????????  */
   /* USER CODE END 2 */
+
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	while (mloopTick == 0) continue;
+	if (mloopTick > 1)
+		SendErrorSignal(ERR_MCOVR,0);
+	mloopTick = 0;
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+
+	//Ide jön majd a ctrl loop
+
+/*// Sending Motor Control State to VCP
+	if (lockDataTrf == OFF)
+	  {
+		switch (motorCtrlType)
+		  {
+			case MSERVO_PROP:
+			case MSERVO_PIPROP:
+			case MSERVO_LQG:
+				sprintf(message,"$CD%04X%04X%04X%04X%04X\r",
+						*(uint16_t *)&dcmCtrlSetp,*(uint16_t *)&motorSpeed,
+						*(uint16_t *)&motorExtAngle,*(uint16_t *)&motorActVal,
+						remTstamp);
+				break;
+			case MCTRL_DIRECT:
+			case MCTRL_PROP:
+			case MCTRL_PI:
+			default:
+				sprintf(message,"$CD%04X%04X%04X%04X%04X\r",
+						*(uint16_t *)&dcmCtrlSetp,*(uint16_t *)&motorSpeed,
+						*(uint16_t *)&motorExtAngle,*(uint16_t *)&motorActVal,
+						remTstamp);
+		  }
+		PutsUART2TxData((uint8_t *)message,strlen(message));
+	  }
+	ctrlLoopCnt = 0;*/
+	/****** Handling Test Start ************************************************/
+
+	if (testStart == ON)
+	  {
+		strcpy(message,"$TS\r");
+		PutsUART2TxData((uint8_t *)message,strlen(message));
+		testStart = OFF;
+	  }
+
+	/****** Handling Test Stop *************************************************/
+
+	if (testStop == ON)
+	  {
+		strcpy(message,"$TE\r");
+		PutsUART2TxData((uint8_t *)message,strlen(message));
+		testStop = OFF;
+	  }
   }
   /* USER CODE END 3 */
 }
@@ -893,6 +979,22 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+
+void SendMessageLine (char *message)
+{
+  char outmsg[68];
+
+    sprintf(outmsg,"$DM%s\r",message);
+    PutsUART2TxData((uint8_t *)outmsg,strlen(outmsg));
+    PutcUART2TxData('\0');
+}
+
+void SendErrorSignal(uint16_t sigid, uint32_t info)
+{
+	char message[32];
+	sprintf(message,"$DE%04X,%08lX\r",sigid,info);
+	PutsUART2TxData((uint8_t *)message,strlen(message));
+}
 
 /* USER CODE END 4 */
 
