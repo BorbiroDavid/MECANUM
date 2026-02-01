@@ -2173,7 +2173,7 @@ void HAL_SYSTICK_Callback(void)
 					  }
 					else
 					  {
-						SendErrorLEDSignal();
+						//SendErrorLEDSignal();
 					  }
 				  }
 				else
@@ -2384,12 +2384,12 @@ void SendErrorSignal(uint16_t sigid, uint32_t info)
   *
   * @retval None
   */
-void SendErrorLEDSignal()
+/*void SendErrorLEDSignal()
 {
 	HAL_GPIO_WritePin(RED_LED_GPIO_Port,RED_LED_Pin,GPIO_PIN_SET);
 	ledState |= LEDR_STATE;
 	ledRsign = LEDSIGN_PER;
-}
+}*/
 
 /**
   * @brief	Sending a Message Line to VCP.

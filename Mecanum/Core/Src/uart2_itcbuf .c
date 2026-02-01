@@ -70,7 +70,7 @@ void UART2_RxCpltCallback()
 	else
 	  {
 		// Receive process blocked
-		SendErrorLEDSignal();
+		//SendErrorLEDSignal();
 	  }
 }
 
@@ -190,7 +190,7 @@ uint32_t PutcUART2TxData(uint8_t data)
 	else
 	  {
 		// TX Buffer full: character is discarded
-		SendErrorLEDSignal();
+		//SendErrorLEDSignal();
 		return(ERROR);
 	  }
 }
