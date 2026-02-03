@@ -438,24 +438,35 @@ int main(void)
 		SendErrorSignal(ERR_SPI1, status);
 	  }
 
-	/******	Initializing Motor PWM ********************************************/
+	// 1. PWM PERIÓDUSOK BEÁLLÍTÁSA (Ha a CubeMX-ben nem fixáltad)
+	htim1.Init.Period = MPWMPER_MAX - 1;
+	HAL_TIM_PWM_Init(&htim1);
+	htim3.Init.Period = MPWMPER_MAX - 1;
+	HAL_TIM_PWM_Init(&htim3);
+	htim4.Init.Period = MPWMPER_MAX - 1;
+	HAL_TIM_PWM_Init(&htim4);
 
-	if (htim3.Init.Period != MPWMPER_MAX - 1)
-	  {
-		htim3.Init.Period = MPWMPER_MAX - 1;
-		if (HAL_TIM_PWM_Init(&htim3) != HAL_OK) Error_Handler();
-	  }
-	__HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, 0);
-	__HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_2, 0);
-	HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
+	// 2. MÉRÉS ÉS IDŐZÍTŐ INDÍTÁSA
+	HAL_TIM_Base_Start_IT(&htim10);             // Szabályozási loop időzítő
+	HAL_TIM_IC_Start_IT(&htim2, TIM_CHANNEL_1);  // RL sebesség mérés
+	HAL_TIM_IC_Start_IT(&htim2, TIM_CHANNEL_2);  // FL sebesség mérés
+	HAL_TIM_IC_Start_IT(&htim5, TIM_CHANNEL_1);  // FR sebesség mérés
+	HAL_TIM_IC_Start_IT(&htim5, TIM_CHANNEL_2);  // RR sebesség mérés
+
+	// 3. MOTOR PWM KIMENETEK INDÍTÁSA
+	HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);    // FL Motor
 	HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_2);
+	HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_3);    // FR Motor
+	HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_4);
+	__HAL_TIM_MOE_ENABLE(&htim1);                // TIM1 speciális engedélyezés!
+	HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_1);    // RL Motor
+	HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_2);
+	HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_3);    // RR Motor
+	HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_4);
 
-
-	/****** Initializing TIMERs ***********************************************/
-
-	HAL_TIM_Base_Start_IT(&htim10);
-	HAL_TIM_IC_Start_IT(&htim2,TIM_CHANNEL_1);
-	HAL_TIM_Base_Start(&htim4);
+	// Ha az FL/FR motorvezérlődnek szüksége van külön enable jelre:
+	// Ellenőrizd a rajzodon, hogy melyik szabad lábra kötötted (pl. PC1 vagy PA4).
+	// Ha nincs külön láb, és rajtuk van a jumper a vezérlőn, akkor ez a 2 sor elég.
 
   /* USER CODE END 2 */
 
@@ -500,14 +511,17 @@ int main(void)
 		        }
 		        motorSpeed[i] = (int16_t)rpsmVal[i];
 
+
+
 		/******	AS5047U Angle measurement ***************************************/
 
 		regdata = ASREG_ANGLEUNC | 0x4000;
 		outSPIdata[0] = ((uint8_t *)&regdata)[1];
 		outSPIdata[1] = ((uint8_t *)&regdata)[0];
-		HAL_GPIO_WritePin(ANGS_NSS_GPIO_Port,ANGS_NSS_Pin,GPIO_PIN_RESET);
+		// ITT A VÁLTOZÁS: A tömb i-edik elemét használjuk a fix pin helyett!
+		HAL_GPIO_WritePin(AS_NSS_Ports[i], AS_NSS_Pins[i], GPIO_PIN_RESET);
 		status =  HAL_SPI_TransmitReceive (&hspi2, outSPIdata, inSPIdata, 2, 100);
-		HAL_GPIO_WritePin(ANGS_NSS_GPIO_Port,ANGS_NSS_Pin,GPIO_PIN_SET);
+		HAL_GPIO_WritePin(AS_NSS_Ports[i], AS_NSS_Pins[i], GPIO_PIN_SET);
 		if (status == 0)
 		  {
 			asANGsensErr = ((inSPIdata[0] & 0xC0) >> 6) & 0x03;
@@ -609,12 +623,18 @@ int main(void)
 		  { // Ignition ON
 			HAL_GPIO_WritePin(DCMC_EN_B_GPIO_Port,DCMC_EN_B_Pin,GPIO_PIN_SET);
 			HAL_GPIO_WritePin(DCMC_EN_A_GPIO_Port,DCMC_EN_A_Pin,GPIO_PIN_SET);
-			if ((motorCtrlSt & DCMCTST_BRAKE) == 0)
-			  { // Ignition ON; Brake OFF
+			// 1. MOTORVEZÉRLŐK AKTIVÁLÁSA (Enable lábak)
+			    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_SET); // MWC_EN_RL
+			    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET); // MWC_EN_RR
+			    // Ha van külön FL és FR enable lábad, azokat is itt kapcsold be
+			if ((motorCtrlSt & DCMCTST_BRAKE) == 0) // fék egyébként sincs
+			  {
 				// Motor Speed Controller
-				switch (motorCtrlType)
+			for (int i = 0; i < 4; i++)
+				{
+				switch (motorCtrlType) // Szabályozó típus kiválasztása
 				  {
-					case MSERVO_LQG:
+					/*case MSERVO_LQG:
 						if (dcmCtrlSetp > SANGLE_MAX)
 							i16arg = SANGLE_MAX;
 						else if (dcmCtrlSetp < SANGLE_MIN)
@@ -660,6 +680,7 @@ int main(void)
 						yvalPI = yval;
 						xvalPI = xval;
 						break;
+
 					case MSERVO_PROP:
 						if (dcmCtrlSetp > SANGLE_MAX)
 							i16arg = SANGLE_MAX;
@@ -675,22 +696,27 @@ int main(void)
 						else
 							motorActVal = (int16_t)i32arg;
 						break;
+*/
 					case MCTRL_PI:
-					  for (int i = 0; i < 4; i++)
-					  {
 						double xval = (double)(dcmCtrlSetp[i] - motorSpeed[i]);
 						double xtmp = xval + xval / mcRPMPITi - xvalPI[i];
 						double yval = yvalPI[i] + mcRPMPIGain * xtmp;
-						 if (yval > WINDUP_MAX) yval = WINDUP_MAX;
-						   else if (yval < WINDUP_MIN) yval = WINDUP_MIN;
+
+						// Anti-windup
+						if (yval > WINDUP_MAX) yval = WINDUP_MAX;
+						else if (yval < WINDUP_MIN) yval = WINDUP_MIN;
+
+						// Kimenet korlátozása
 						if (yval > (double)ACTVAL_MAX) motorActVal[i] = ACTVAL_MAX;
-						   else if (yval < (double)ACTVAL_MIN) motorActVal[i] = ACTVAL_MIN;
-						   else motorActVal[i] = (int16_t)yval;
+						else if (yval < (double)ACTVAL_MIN) motorActVal[i] = ACTVAL_MIN;
+						else motorActVal[i] = (int16_t)yval;
+
+						// Állapotmentés a következő mintavételhez
 						yvalPI[i] = yval;
 						xvalPI[i] = xval;
-						}
 						break;
-					case MCTRL_PROP:
+
+					/*case MCTRL_PROP:
 						if (mcRPMPropGainCorr == OFF)
 							i32arg = (int32_t)(mcRPMPropGain * (float)(dcmCtrlSetp - motorSpeed));
 						else
@@ -703,7 +729,8 @@ int main(void)
 							motorActVal = ACTVAL_MIN;
 						else
 							motorActVal = (int16_t)i32arg;
-						break;
+						break;*/
+
 					case MCTRL_DIRECT:
 					default:
 						if (dcmCtrlSetp > ACTVAL_MAX)
@@ -713,10 +740,38 @@ int main(void)
 						else
 							motorActVal = dcmCtrlSetp;
 				  }
-				if (motorActVal != motorActValBk)
-				  {
-					motorActValPW = motorActVal / MPWMRED_FACT;
-					if (motorPWMtop != motorPWMtopBk)
+				// PWM KIÍRÁS, ha változott az érték
+				    if (motorActVal[i] != motorActValBk[i])
+				    {
+				        motorActValPW = motorActVal[i] / MPWMRED_FACT;
+
+				        uint16_t pulseP = (motorActValPW >= 0) ? (uint16_t)motorActValPW : 0;
+				        uint16_t pulseN = (motorActValPW < 0) ? (uint16_t)(-motorActValPW) : 0;
+
+				        switch(i)
+				        {
+				            case 0: // FL (TIM3 CH1/2)
+				                __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, pulseP);
+				                __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_2, pulseN);
+				                break;
+				            case 1: // FR (TIM1 CH3/4)
+				                __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_3, pulseP);
+				                __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_4, pulseN);
+				                break;
+				            case 2: // RL (TIM4 CH1/2)
+				                __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_1, pulseP);
+				                __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_2, pulseN);
+				                break;
+				            case 3: // RR (TIM4 CH3/4)
+				                __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_3, pulseP);
+				                __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_4, pulseN);
+				                break;
+				        }
+				        motorActValBk[i] = motorActVal[i];
+				    }
+
+				    // Nem biztos hogy kell
+					/*if (motorPWMtop != motorPWMtopBk)
 					  { // Action for PS Voltage correction
 						__HAL_TIM_SET_AUTORELOAD(&htim3, motorPWMtop - 1);
 						motorPWMtopBk = motorPWMtop;
@@ -734,43 +789,30 @@ int main(void)
 						__HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_2, pulse);
 					  }
 					motorActValBk = motorActVal;
-				  }
-			  }
-			else
-			  { // Ignition ON; Brake ON
-				speedPWMconf.Pulse = 0;
-				__HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, 0);
-				__HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_2, 0);
-				if (motorActVal != 0)
-				  {
-					motorActVal = 0;
-					motorActValBk = 0x7FFF;
-					motorActValPW = 0;
-					xvalPI = 0.0;
-					yvalPI = 0.0;
-				  }
-			  }
+				  }*/
+
+			  } // for ciklus vége
 		  }
-		else
-		  { // Ignition OFF
-			HAL_GPIO_WritePin(DCMC_EN_B_GPIO_Port,DCMC_EN_B_Pin,GPIO_PIN_RESET);
-			HAL_GPIO_WritePin(DCMC_EN_A_GPIO_Port,DCMC_EN_A_Pin,GPIO_PIN_RESET);
-			if (motorActVal != 0)
-			  {
-				motorActVal = 0;
-				motorActValBk = 0x7FFF;
-				motorActValPW = 0;
-				xvalPI = 0.0;
-				yvalPI = 0.0;
-				__HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, 0);
-				__HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_2, 0);
-			  }
-			if (motorCtrlSt != 0)
-			  {
-				motorCtrlSt = 0;
-			  }
-		  }
-		// Sending Motor Control State to VCP
+		else // Ignition OFF - Biztonsági leállás
+		{
+		    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_RESET);
+		    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_RESET);
+
+		    // Összes PWM leállítása
+		    __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, 0);
+		    __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_2, 0);
+		    __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_3, 0);
+		    __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_4, 0);
+		    __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_1, 0);
+		    __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_2, 0);
+		    __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_3, 0);
+		    __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_4, 0);
+
+		    for(int i=0; i<4; i++) {
+		        yvalPI[i] = 0; xvalPI[i] = 0; motorActValBk[i] = 0x7FFF;
+		    }
+		}
+		// Sending Motor Control State to VCP Ez kell??
 		if (lockDataTrf == OFF)
 		  {
 			switch (motorCtrlType)
@@ -1733,7 +1775,7 @@ static void MX_TIM3_Init(void)
   htim3.Init.CounterMode = TIM_COUNTERMODE_CENTERALIGNED1;
   htim3.Init.Period = 2048;
   htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-  htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
+  htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim3) != HAL_OK)
   {
     Error_Handler();
@@ -1889,8 +1931,8 @@ static void MX_USART2_UART_Init(void)
 static void MX_GPIO_Init(void)
 {
   GPIO_InitTypeDef GPIO_InitStruct = {0};
-  /* USER CODE BEGIN MX_GPIO_Init_1 */
-  /* USER CODE END MX_GPIO_Init_1 */
+/* USER CODE BEGIN MX_GPIO_Init_1 */
+/* USER CODE END MX_GPIO_Init_1 */
 
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOC_CLK_ENABLE();
@@ -1974,14 +2016,14 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(USR_SW2_GPIO_Port, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
-  HAL_NVIC_SetPriority(EXTI9_5_IRQn, 6, 0);
+  HAL_NVIC_SetPriority(EXTI9_5_IRQn, 8, 0);
   HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
 
-  HAL_NVIC_SetPriority(EXTI15_10_IRQn, 6, 0);
+  HAL_NVIC_SetPriority(EXTI15_10_IRQn, 8, 0);
   HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
 
-  /* USER CODE BEGIN MX_GPIO_Init_2 */
-  /* USER CODE END MX_GPIO_Init_2 */
+/* USER CODE BEGIN MX_GPIO_Init_2 */
+/* USER CODE END MX_GPIO_Init_2 */
 }
 
 /* USER CODE BEGIN 4 */
