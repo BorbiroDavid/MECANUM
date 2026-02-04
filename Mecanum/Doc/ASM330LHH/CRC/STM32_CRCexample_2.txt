@@ -1,0 +1,88 @@
+https://engsta.net/stm32-crc32-example-hardware-and-software-calculation/
+
+#include "stm32f10x.h"
+#include "stm32f10x_gpio.h"
+#include "stm32f10x_crc.h"
+#include "stm32f10x_rcc.h"
+
+/******************************************************************************
+ *  CRC (cyclic redundancy check) calculation unit to get a CRC code of a given
+ *  buffer of data word(32-bit), based on a fixed generator polynomial(0x4C11DB7)
+ ******************************************************************************/
+/* Private macro -------------------------------------------------------------*/
+/* Private variables ---------------------------------------------------------*/
+/* Functions -----------------------------------------------------------------*/
+#define USE_HARDWARE_CRC32
+
+#ifdef USE_HARDWARE_CRC32
+uint8_t CRCenabledFlag = 0;
+/*****************************************************************************
+*  Calculate CRC32 in STM32 Hardware (Polyminal of STM32F1xx is fixed to 0x04C11DB7, CRC-32/BZIP2)
+*  DM00068118.pdf for more Infos
+******************************************************************************/
+uint32_t
+crc32_check (uint8_t* buf, uint16_t len) {
+
+	uint32_t* pBuffer = (uint32_t*)buf;
+	uint32_t BufferLength = (len/4); //(Length of buf uint8 to Length of buf uint32 is 1 by 4)
+	uint32_t index = 0;
+
+	if(!CRCenabledFlag) {
+		RCC_AHBPeriphClockCmd(RCC_AHBPeriph_CRC, ENABLE);
+	}
+	CRC_ResetDR();
+
+	for(index = 0; index < BufferLength; index++) {
+	   CRC->DR = __RBIT(pBuffer[index]);
+	}
+	return __RBIT(CRC->DR) ^ 0xFFFFFFFF;
+}
+
+#else
+#define CRC32_POLY 0x04c11db7
+static uint32_t table[256];
+static uint8_t have_table = 0;
+/*****************************************************************************
+*  Calculate CRC32 in software
+*  Example:
+*  	char *buf = "hallo lustige Welt\0";
+*	crcval = crc32_check (buf, strlen(buf));
+*	printf("\r\nVal1 0x%X", (unsigned int)crcval);
+*	Source: http://rosettacode.org/wiki/CRC-32#C
+*	Validator: http://www.zorc.breitbandkatze.de/crc.html
+******************************************************************************/
+uint32_t
+crc32_check (char *buf, uint16_t len) {
+
+	static int have_table = 0;
+	uint32_t rem;
+	uint8_t octet;
+	int i, j;
+	const char *p, *q;
+	uint32_t crc = 0;
+	/* This check is not thread safe; there is no mutex. */
+	if (have_table == 0) {
+		/* Calculate CRC table. */
+		for (i = 0; i < 256; i++) {
+			rem = i;  /* remainder from polynomial division */
+			for (j = 0; j < 8; j++) {
+				if (rem & 1) {
+					rem >>= 1;
+					rem ^= 0xedb88320;
+				} else
+					rem >>= 1;
+			}
+			table[i] = rem;
+		}
+		have_table = 1;
+	}
+
+	crc = ~crc;
+	q = buf + len;
+	for (p = buf; p < q; p++) {
+		octet = *p;
+		crc = (crc >> 8) ^ table[(crc & 0xff) ^ octet];
+	}
+	return ~crc;
+}
+#endif
