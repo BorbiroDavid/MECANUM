@@ -235,8 +235,8 @@ static int16_t motorActValPW = 0;			// Motor Speed Pulse Width (signed)
 static uint16_t motorPWMtop = MPWMPER_MAX;	// PWM Counter Top value
 static uint16_t motorPWMtopBk = MPWMPER_MAX;	// PWM Counter Top value backup
 
-//static int16_t dcmCtrlSetp = 0;				// Motor Control SetPoint
-//volatile int16_t motorSpeed = 0;			// Motor RPS sampled value
+static int16_t dcmCtrlSetp = 0;				// Motor Control SetPoint
+volatile int16_t motorSpeed = 0;			// Motor RPS sampled value
 static int16_t motorAngle = 0;				// Motor Angle
 static int16_t motorExtAngle = 0;			// Motor Extended Angle
 
@@ -279,14 +279,13 @@ static uint16_t testSigReset = OFF;			// Test Signal Reset / Cleared flag
 static uint16_t testStart = OFF;			// Test Start flag
 static uint16_t testStop = OFF;				// Test Stop flag
 
-// 4 motoros kiterjesztés
 volatile int32_t nperAcc[4] = {0}, nperCnt[4] = {0};
 volatile int32_t rpsmVal[4] = {0};
 volatile int16_t rpsNoPulse[4] = {0};
 
-static int16_t dcmCtrlSetp[4] = {0};  // 4 motor alapjele
-volatile int16_t motorSpeed[4] = {0}; // 4 motor mért sebessége
-static int16_t motorActVal[4] = {0};  // 4 motor beavatkozó jele
+static int16_t dcmCtrlSetp[4] = {0};  // alapjel
+volatile int16_t motorSpeed[4] = {0}; // mért sebesség
+static int16_t motorActVal[4] = {0};  // beavatkozó jel
 static int16_t motorActValBk[4] = {32767, 32767, 32767, 32767};
 
 // PI szabályozó állapotai motoronként
@@ -438,7 +437,7 @@ int main(void)
 		SendErrorSignal(ERR_SPI1, status);
 	  }
 
-	// 1. PWM PERIÓDUSOK BEÁLLÍTÁSA (Ha a CubeMX-ben nem fixáltad)
+	// PWM PERIÓDUSOK BEÁLLÍTÁSA 
 	htim1.Init.Period = MPWMPER_MAX - 1;
 	HAL_TIM_PWM_Init(&htim1);
 	htim3.Init.Period = MPWMPER_MAX - 1;
@@ -446,14 +445,14 @@ int main(void)
 	htim4.Init.Period = MPWMPER_MAX - 1;
 	HAL_TIM_PWM_Init(&htim4);
 
-	// 2. MÉRÉS ÉS IDŐZÍTŐ INDÍTÁSA
+	// MÉRÉS ÉS IDŐZÍTŐ INDÍTÁSA
 	HAL_TIM_Base_Start_IT(&htim10);             // Szabályozási loop időzítő
 	HAL_TIM_IC_Start_IT(&htim2, TIM_CHANNEL_1);  // RL sebesség mérés
 	HAL_TIM_IC_Start_IT(&htim2, TIM_CHANNEL_2);  // FL sebesség mérés
 	HAL_TIM_IC_Start_IT(&htim5, TIM_CHANNEL_1);  // FR sebesség mérés
 	HAL_TIM_IC_Start_IT(&htim5, TIM_CHANNEL_2);  // RR sebesség mérés
 
-	// 3. MOTOR PWM KIMENETEK INDÍTÁSA
+	// MOTOR PWM KIMENETEK INDÍTÁSA
 	HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);    // FL Motor
 	HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_2);
 	HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_3);    // FR Motor
@@ -463,10 +462,6 @@ int main(void)
 	HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_2);
 	HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_3);    // RR Motor
 	HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_4);
-
-	// Ha az FL/FR motorvezérlődnek szüksége van külön enable jelre:
-	// Ellenőrizd a rajzodon, hogy melyik szabad lábra kötötted (pl. PC1 vagy PA4).
-	// Ha nincs külön láb, és rajtuk van a jumper a vezérlőn, akkor ez a 2 sor elég.
 
   /* USER CODE END 2 */
 
@@ -518,7 +513,6 @@ int main(void)
 		regdata = ASREG_ANGLEUNC | 0x4000;
 		outSPIdata[0] = ((uint8_t *)&regdata)[1];
 		outSPIdata[1] = ((uint8_t *)&regdata)[0];
-		// ITT A VÁLTOZÁS: A tömb i-edik elemét használjuk a fix pin helyett!
 		HAL_GPIO_WritePin(AS_NSS_Ports[i], AS_NSS_Pins[i], GPIO_PIN_RESET);
 		status =  HAL_SPI_TransmitReceive (&hspi2, outSPIdata, inSPIdata, 2, 100);
 		HAL_GPIO_WritePin(AS_NSS_Ports[i], AS_NSS_Pins[i], GPIO_PIN_SET);
@@ -623,10 +617,10 @@ int main(void)
 		  { // Ignition ON
 			HAL_GPIO_WritePin(DCMC_EN_B_GPIO_Port,DCMC_EN_B_Pin,GPIO_PIN_SET);
 			HAL_GPIO_WritePin(DCMC_EN_A_GPIO_Port,DCMC_EN_A_Pin,GPIO_PIN_SET);
-			// 1. MOTORVEZÉRLŐK AKTIVÁLÁSA (Enable lábak)
+			// MOTORVEZÉRLŐK AKTIVÁLÁSA (Enable lábak)
 			    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_SET); // MWC_EN_RL
 			    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET); // MWC_EN_RR
-			    // Ha van külön FL és FR enable lábad, azokat is itt kapcsold be
+	
 			if ((motorCtrlSt & DCMCTST_BRAKE) == 0) // fék egyébként sincs
 			  {
 				// Motor Speed Controller
@@ -812,7 +806,7 @@ int main(void)
 		        yvalPI[i] = 0; xvalPI[i] = 0; motorActValBk[i] = 0x7FFF;
 		    }
 		}
-		// Sending Motor Control State to VCP Ez kell??
+		// Sending Motor Control State to VCP 
 		if (lockDataTrf == OFF)
 		  {
 			switch (motorCtrlType)
