@@ -212,10 +212,10 @@ static uint8_t asANGsensErr = 0;			// AS ANG Sensor Error
 static uint8_t asANGsensErrBk = 0xFF;		// AS ANG Sensor Error backup
 
 volatile uint32_t rpsmCapt = 0;				// Motor Captured value of RPS
-volatile int32_t rpsmVal = 0;				// Motor RPS measured value
-volatile int32_t nperAcc = 0;				// Motor Period Number accumulator
-volatile uint32_t nperCnt = 0;				// Motor Period Number counter
-volatile int16_t rpsNoPulse = 0;			// Motor Number of periods without pulses
+volatile int32_t rpsmVal1, rpsmVal2, rpsmVal3, rpsmVal4 = 0;				// Motor RPS measured value
+volatile int32_t nperacc1, nperacc2, nperacc3, nperacc4 = 0;				// Motor Period Number accumulator
+volatile uint32_t npercnt1, npercnt2, npercnt3, npercnt4 = 0;				// Motor Period Number counter
+volatile int16_t rpsNoPulse1, rpsNoPulse2, rpsNoPulse3, rpsNoPulse4 = 0;	// Motor Number of periods without pulses
 
 static uint16_t vbatVal = 0;				// Battery Voltage value
 static uint16_t vbatValBk = 0xFFFF;			// Battery Voltage backup value
@@ -229,14 +229,10 @@ static uint16_t ctrlTstamp = 0;				// Control Time Stamp
 static uint16_t remTstamp = 0;				// Time Stamp to send to remote system
 static uint16_t lockDataTrf = OFF; 			// Data Transfer Lock On/Off
 
-static int16_t motorActVal = 0;				// Motor Actuator value
-static int16_t motorActValBk = 0x7FFF;		// Motor Actuator value backup
 static int16_t motorActValPW = 0;			// Motor Speed Pulse Width (signed)
 static uint16_t motorPWMtop = MPWMPER_MAX;	// PWM Counter Top value
 static uint16_t motorPWMtopBk = MPWMPER_MAX;	// PWM Counter Top value backup
 
-static int16_t dcmCtrlSetp = 0;				// Motor Control SetPoint
-volatile int16_t motorSpeed = 0;			// Motor RPS sampled value
 static int16_t motorAngle = 0;				// Motor Angle
 static int16_t motorExtAngle = 0;			// Motor Extended Angle
 
@@ -268,8 +264,8 @@ static double mcglPx0 = 0.0;						// Motor General Linear Control x0 past value
 static double mcglPx1 = 0.0;						// Motor General Linear Control x1 past value
 static double mcglPx2 = 0.0;						// Motor General Linear Control x2 past value
 
-static double xvalPI = 0.0;					// PI Controller: x value
-static double yvalPI = 0.0;					// PI Controller: y value
+static double xvalPI1, xvalPI2, xvalPI3, xvalPI4 = 0.0;					// PI Controller: x value
+static double yvalPI1, yvalPI2, yvalPI3, yvalPI4 = 0.0;					// PI Controller: y value
 
 volatile uint8_t testMode = 0;				// Test Mode state - Local Mode is default
 volatile int16_t testSignal[TESTSIGN_SIZE];	// Input Test Signal Data array
@@ -279,18 +275,11 @@ static uint16_t testSigReset = OFF;			// Test Signal Reset / Cleared flag
 static uint16_t testStart = OFF;			// Test Start flag
 static uint16_t testStop = OFF;				// Test Stop flag
 
-volatile int32_t nperAcc[4] = {0}, nperCnt[4] = {0};
-volatile int32_t rpsmVal[4] = {0};
-volatile int16_t rpsNoPulse[4] = {0};
-
-static int16_t dcmCtrlSetp[4] = {0};  // alapjel
-volatile int16_t motorSpeed[4] = {0}; // mért sebesség
-static int16_t motorActVal[4] = {0};  // beavatkozó jel
-static int16_t motorActValBk[4] = {32767, 32767, 32767, 32767};
-
-// PI szabályozó állapotai motoronként
-static double xvalPI[4] = {0.0};
-static double yvalPI[4] = {0.0};
+static int16_t dcmCtrlSetp1, dcmCtrlSetp2, dcmCtrlSetp3, dcmCtrlSetp4 = 0;  // alapjel
+volatile int16_t motorSpeed1,motorSpeed2, motorSpeed3, motorSpeed4 = 0; // mért sebesség
+static int16_t motorActVal1, motorActVal2, motorActVal3, motorActVal4 = 0;  // beavatkozó jel
+static int16_t motorActValPW1, motorActValPW2, motorActValPW3, motorActValPW4 = 0;			// Motor Speed Pulse Width (signed)
+static int16_t motorActValBk = 32767;
 
 // NSS lábak a 4 szöghelyzet-szenzorhoz
 GPIO_TypeDef* AS_NSS_Ports[4] = { GPIOB, GPIOB, GPIOB, GPIOB };
@@ -335,13 +324,11 @@ int main(void)
   uint16_t regdata;
   uint16_t pulse;
   float npaval = 0.0;
-  int32_t nperacc;
-  uint32_t npercnt;
   uint8_t rch;
   float ctrl_par;
   float vbat_volt;
   uint8_t inSPIdata[3], outSPIdata[3];
-  double xval, xtmp, yval;
+  double xval1, xval2, xval3, xval4,xtmp1, xtmp2, xtmp3, xtmp4, yval1, yval2, yval3, yval4;
   double x0, x1, x2, u, y;
 
   /* USER CODE END 1 */
@@ -481,32 +468,98 @@ int main(void)
 	ctrlLoopCnt++;
 	if (ctrlLoopCnt >= samplePeriod)
 	  {
-		for (int i = 0; i < 4; i++)
-		    {
-		        // RPM Sampling
-		        if (nperCnt[i] > 0)
-		        {
-		            prim = __get_PRIMASK();
-		            __disable_irq();
-		            uint32_t n_cnt = nperCnt[i];
-		            int32_t n_acc = nperAcc[i];
-		            nperAcc[i] = 0; nperCnt[i] = 0;
-		            if (!prim) __enable_irq();
+		 // RPM Sampling
+			// 1.
+			if (nperCnt1 > 0)
+			{
+				prim = __get_PRIMASK();
+				__disable_irq();
+				n_cnt = nperCnt1;           
+				n_acc = nperAcc1;           
+				nperAcc1 = 0; nperCnt1 = 0; 
+				if (!prim) __enable_irq();
 
-		            float npaval = (n_cnt > 1) ? (float)n_acc / (float)n_cnt : (float)n_acc;
-		            rpsmVal[i] = (int32_t)(RPS_FACTOR / npaval);
-		            rpsNoPulse[i] = 0;
-		        }
-		        else
-		        {
-		            if (rpsmVal[i] != 0) {
-		                rpsNoPulse[i]++;
-		                if (rpsNoPulse[i] > 2) rpsmVal[i] /= 2;
-		            }
-		        }
-		        motorSpeed[i] = (int16_t)rpsmVal[i];
+				npaval = (n_cnt > 1) ? (float)n_acc / (float)n_cnt : (float)n_acc;
+				rpsmVal1 = (int32_t)(RPS_FACTOR / npaval);
+				rpsNoPulse1 = 0;
+			}
+			else
+			{
+				if (rpsmVal1 != 0) {
+					rpsNoPulse1++;
+					if (rpsNoPulse1 > 2) rpsmVal1 /= 2;
+				}
+			}
+			motorSpeed1 = (int16_t)rpsmVal1;
 
+			// 2.
+			if (nperCnt2 > 0)
+			{
+				prim = __get_PRIMASK();
+				__disable_irq();
+				n_cnt = nperCnt2;           
+				n_acc = nperAcc2;           
+				nperAcc2 = 0; nperCnt2 = 0; 
+				if (!prim) __enable_irq();
 
+				npaval = (n_cnt > 1) ? (float)n_acc / (float)n_cnt : (float)n_acc;
+				rpsmVal2 = (int32_t)(RPS_FACTOR / npaval);
+				rpsNoPulse2 = 0;
+			}
+			else
+			{
+				if (rpsmVal2 != 0) {
+					rpsNoPulse2++;
+					if (rpsNoPulse2 > 2) rpsmVal2 /= 2;
+				}
+			}
+			motorSpeed2 = (int16_t)rpsmVal2;
+
+			// 3.
+			if (nperCnt3 > 0)
+			{
+				prim = __get_PRIMASK();
+				__disable_irq();
+				n_cnt = nperCnt3;          
+				n_acc = nperAcc3;           
+				nperAcc3 = 0; nperCnt3 = 0; 
+				if (!prim) __enable_irq();
+
+				npaval = (n_cnt > 1) ? (float)n_acc / (float)n_cnt : (float)n_acc;
+				rpsmVal3 = (int32_t)(RPS_FACTOR / npaval);
+				rpsNoPulse3 = 0;
+			}
+			else
+			{
+				if (rpsmVal3 != 0) {
+					rpsNoPulse3++;
+					if (rpsNoPulse3 > 2) rpsmVal3 /= 2;
+				}
+			}
+			motorSpeed3 = (int16_t)rpsmVal3;
+
+			// 4. 
+			if (nperCnt4 > 0)
+			{
+				prim = __get_PRIMASK();
+				__disable_irq();
+				n_cnt = nperCnt4;           
+				n_acc = nperAcc4;           
+				nperAcc4 = 0; nperCnt4 = 0; 
+				if (!prim) __enable_irq();
+
+				npaval = (n_cnt > 1) ? (float)n_acc / (float)n_cnt : (float)n_acc;
+				rpsmVal4 = (int32_t)(RPS_FACTOR / npaval);
+				rpsNoPulse4 = 0;
+			}
+			else
+			{
+				if (rpsmVal4 != 0) {
+					rpsNoPulse4++;
+					if (rpsNoPulse4 > 2) rpsmVal4 /= 2;
+				}
+			}
+			motorSpeed4 = (int16_t)rpsmVal4;
 
 		/******	AS5047U Angle measurement ***************************************/
 
@@ -624,8 +677,7 @@ int main(void)
 			if ((motorCtrlSt & DCMCTST_BRAKE) == 0) // fék egyébként sincs
 			  {
 				// Motor Speed Controller
-			for (int i = 0; i < 4; i++)
-				{
+			
 				switch (motorCtrlType) // Szabályozó típus kiválasztása
 				  {
 					/*case MSERVO_LQG:
@@ -692,22 +744,78 @@ int main(void)
 						break;
 */
 					case MCTRL_PI:
-						double xval = (double)(dcmCtrlSetp[i] - motorSpeed[i]);
-						double xtmp = xval + xval / mcRPMPITi - xvalPI[i];
-						double yval = yvalPI[i] + mcRPMPIGain * xtmp;
+						// 1
+						double xval1 = (double)(dcmCtrlSetp1 - motorSpeed1);
+						double xtmp1 = xval1 + xval1 / mcRPMPITi - xvalPI1;
+						double yval1 = yvalPI1 + mcRPMPIGain * xtmp1
 
 						// Anti-windup
-						if (yval > WINDUP_MAX) yval = WINDUP_MAX;
-						else if (yval < WINDUP_MIN) yval = WINDUP_MIN;
+						if (yval1 > WINDUP_MAX) yval1 = WINDUP_MAX;
+						else if (yval1 < WINDUP_MIN) yval1 = WINDUP_MIN;
 
 						// Kimenet korlátozása
-						if (yval > (double)ACTVAL_MAX) motorActVal[i] = ACTVAL_MAX;
-						else if (yval < (double)ACTVAL_MIN) motorActVal[i] = ACTVAL_MIN;
-						else motorActVal[i] = (int16_t)yval;
+						if (yval1 > (double)ACTVAL_MAX) motorActVal1 = ACTVAL_MAX;
+						else if (yval1 < (double)ACTVAL_MIN) motorActVal1 = ACTVAL_MIN;
+						else motorActVal1 = (int16_t)yval1;
 
 						// Állapotmentés a következő mintavételhez
-						yvalPI[i] = yval;
-						xvalPI[i] = xval;
+						yvalPI1 = yval1;
+						xvalPI1 = xval1;
+
+						// 2
+						double xval2 = (double)(dcmCtrlSetp2 - motorSpeed2);
+						double xtmp2 = xval2 + xval2 / mcRPMPITi - xvalPI2;
+						double yval2 = yvalPI2 + mcRPMPIGain * xtmp2
+
+							// Anti-windup
+							if (yval2 > WINDUP_MAX) yval2 = WINDUP_MAX;
+							else if (yval2 < WINDUP_MIN) yval2 = WINDUP_MIN;
+
+						// Kimenet korlátozása
+						if (yval2 > (double)ACTVAL_MAX) motorActVal2 = ACTVAL_MAX;
+						else if (yval2 < (double)ACTVAL_MIN) motorActVal2 = ACTVAL_MIN;
+						else motorActVal2 = (int16_t)yval2;
+
+						// Állapotmentés a következő mintavételhez
+						yvalPI2 = yval2;
+						xvalPI2 = xval2;
+
+						// 3
+						double xval3 = (double)(dcmCtrlSetp3 - motorSpeed3);
+						double xtmp3 = xval3 + xval3 / mcRPMPITi - xvalPI3;
+						double yval3 = yvalPI3 + mcRPMPIGain * xtmp3
+
+							// Anti-windup
+							if (yval3 > WINDUP_MAX) yval3 = WINDUP_MAX;
+							else if (yval3 < WINDUP_MIN) yval3 = WINDUP_MIN;
+
+						// Kimenet korlátozása
+						if (yval3 > (double)ACTVAL_MAX) motorActVal3 = ACTVAL_MAX;
+						else if (yval3 < (double)ACTVAL_MIN) motorActVal3 = ACTVAL_MIN;
+						else motorActVal3 = (int16_t)yval3;
+
+						// Állapotmentés a következő mintavételhez
+						yvalPI3 = yval3;
+						xvalPI3 = xval3;
+
+						// 4
+						double xval4 = (double)(dcmCtrlSetp4 - motorSpeed4);
+						double xtmp4 = xval4 + xval4 / mcRPMPITi - xvalPI4;
+						double yval4 = yvalPI4 + mcRPMPIGain * xtmp4
+
+							// Anti-windup
+							if (yval4 > WINDUP_MAX) yval4 = WINDUP_MAX;
+							else if (yval4 < WINDUP_MIN) yval4 = WINDUP_MIN;
+
+						// Kimenet korlátozása
+						if (yval4 > (double)ACTVAL_MAX) motorActVal4 = ACTVAL_MAX;
+						else if (yval4 < (double)ACTVAL_MIN) motorActVal4 = ACTVAL_MIN;
+						else motorActVal4 = (int16_t)yval4;
+
+						// Állapotmentés a következő mintavételhez
+						yvalPI4 = yval4;
+						xvalPI4 = xval4;
+					
 						break;
 
 					/*case MCTRL_PROP:
@@ -727,42 +835,97 @@ int main(void)
 
 					case MCTRL_DIRECT:
 					default:
-						if (dcmCtrlSetp > ACTVAL_MAX)
-							motorActVal = ACTVAL_MAX;
-						else if (dcmCtrlSetp < ACTVAL_MIN)
-							motorActVal = ACTVAL_MIN;
+						if (dcmCtrlSetp1 > ACTVAL_MAX)
+							motorActVal1 = ACTVAL_MAX;
+						else if (dcmCtrlSetp1 < ACTVAL_MIN)
+							motorActVal1 = ACTVAL_MIN;
 						else
-							motorActVal = dcmCtrlSetp;
+							motorActVal1 = dcmCtrlSetp1;
+
+						if (dcmCtrlSetp2 > ACTVAL_MAX)
+							motorActVal2 = ACTVAL_MAX;
+						else if (dcmCtrlSetp2 < ACTVAL_MIN)
+							motorActVal2 = ACTVAL_MIN;
+						else
+							motorActVal2 = dcmCtrlSetp2;
+
+						if (dcmCtrlSetp3 > ACTVAL_MAX)
+							motorActVal3 = ACTVAL_MAX;
+						else if (dcmCtrlSetp3 < ACTVAL_MIN)
+							motorActVal3 = ACTVAL_MIN;
+						else
+							motorActVal3 = dcmCtrlSetp3;
+
+						if (dcmCtrlSetp4 > ACTVAL_MAX)
+							motorActVal4 = ACTVAL_MAX;
+						else if (dcmCtrlSetp4 < ACTVAL_MIN)
+							motorActVal4 = ACTVAL_MIN;
+						else
+							motorActVal4 = dcmCtrlSetp1;
+				  
+				   // PWM KIÍRÁS, ha változott az érték
+				  uint16_t pulseP;
+				  uint16_t pulseN;
+
+				  // ==========================================
+				  // 1. MOTOR (Bal Első - FL) -> TIM3 CH1/2
+				  // ==========================================
+				  if (motorActVal1 != motorActValBk1)
+				  {
+					  int16_t pw = motorActVal1 / MPWMRED_FACT;
+					  pulseP = (pw >= 0) ? (uint16_t)pw : 0;
+					  pulseN = (pw < 0) ? (uint16_t)(-pw) : 0;
+
+					  __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, pulseP);
+					  __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_2, pulseN);
+
+					  motorActValBk1 = motorActVal1; 
 				  }
-				// PWM KIÍRÁS, ha változott az érték
-				    if (motorActVal[i] != motorActValBk[i])
-				    {
-				        motorActValPW = motorActVal[i] / MPWMRED_FACT;
 
-				        uint16_t pulseP = (motorActValPW >= 0) ? (uint16_t)motorActValPW : 0;
-				        uint16_t pulseN = (motorActValPW < 0) ? (uint16_t)(-motorActValPW) : 0;
+				  // ==========================================
+				  // 2. MOTOR (Jobb Első - FR) -> TIM1 CH3/4
+				  // ==========================================
+				  if (motorActVal2 != motorActValBk2)
+				  {
+					  int16_t pw = motorActVal2 / MPWMRED_FACT;
+					  pulseP = (pw >= 0) ? (uint16_t)pw : 0;
+					  pulseN = (pw < 0) ? (uint16_t)(-pw) : 0;
 
-				        switch(i)
-				        {
-				            case 0: // FL (TIM3 CH1/2)
-				                __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, pulseP);
-				                __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_2, pulseN);
-				                break;
-				            case 1: // FR (TIM1 CH3/4)
-				                __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_3, pulseP);
-				                __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_4, pulseN);
-				                break;
-				            case 2: // RL (TIM4 CH1/2)
-				                __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_1, pulseP);
-				                __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_2, pulseN);
-				                break;
-				            case 3: // RR (TIM4 CH3/4)
-				                __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_3, pulseP);
-				                __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_4, pulseN);
-				                break;
-				        }
-				        motorActValBk[i] = motorActVal[i];
-				    }
+					  __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_3, pulseP);
+					  __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_4, pulseN);
+
+					  motorActValBk2 = motorActVal2; 
+				  }
+
+				  // ==========================================
+				  // 3. MOTOR (Bal Hátsó - RL) -> TIM4 CH1/2
+				  // ==========================================
+				  if (motorActVal3 != motorActValBk3)
+				  {
+					  int16_t pw = motorActVal3 / MPWMRED_FACT;
+					  pulseP = (pw >= 0) ? (uint16_t)pw : 0;
+					  pulseN = (pw < 0) ? (uint16_t)(-pw) : 0;
+
+					  __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_1, pulseP);
+					  __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_2, pulseN);
+
+					  motorActValBk3 = motorActVal3; 
+				  }
+
+				  // ==========================================
+				  // 4. MOTOR (Jobb Hátsó - RR) -> TIM4 CH3/4
+				  // ==========================================
+				  if (motorActVal4 != motorActValBk4)
+				  {
+					  int16_t pw = motorActVal4 / MPWMRED_FACT;
+					  pulseP = (pw >= 0) ? (uint16_t)pw : 0;
+					  pulseN = (pw < 0) ? (uint16_t)(-pw) : 0;
+
+					  __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_3, pulseP);
+					  __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_4, pulseN);
+
+					  motorActValBk4 = motorActVal4; 
+				  }
 
 				    // Nem biztos hogy kell
 					/*if (motorPWMtop != motorPWMtopBk)
@@ -784,10 +947,10 @@ int main(void)
 					  }
 					motorActValBk = motorActVal;
 				  }*/
-
-			  } // for ciklus vége
+	   
 		  }
-		else // Ignition OFF - Biztonsági leállás
+
+		  else // Ignition OFF - Biztonsági leállás
 		{
 		    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_RESET);
 		    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_RESET);
@@ -802,9 +965,12 @@ int main(void)
 		    __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_3, 0);
 		    __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_4, 0);
 
-		    for(int i=0; i<4; i++) {
-		        yvalPI[i] = 0; xvalPI[i] = 0; motorActValBk[i] = 0x7FFF;
-		    }
+		    
+		   yvalPI1 = 0; xvalPI1 = 0; motorActValBk1 = 0x7FFF;
+		   yvalPI2 = 0; xvalPI2 = 0; motorActValBk2 = 0x7FFF;
+		   yvalPI3 = 0; xvalPI3 = 0; motorActValBk3 = 0x7FFF;
+		   yvalPI4 = 0; xvalPI4 = 0; motorActValBk4 = 0x7FFF;
+
 		}
 		// Sending Motor Control State to VCP 
 		if (lockDataTrf == OFF)
