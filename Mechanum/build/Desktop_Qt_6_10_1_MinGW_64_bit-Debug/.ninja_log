@@ -1,0 +1,19 @@
+# ninja log v6
+18	674	8019453163887783	build.ninja	698f7a9262a48cc7
+24	186	8019419633167608	Mechanum_autogen/mocs_compilation.cpp	468a9f762d5bceaf
+177	2791	8010145362340756	CMakeFiles/Mechanum.dir/main.cpp.obj	954ee5320d180c54
+24	186	8019419633167608	Mechanum_autogen/timestamp	468a9f762d5bceaf
+24	186	8019419633167608	C:/Users/dborb/Documents/Qt_projects/Mechanum/build/Desktop_Qt_6_10_1_MinGW_64_bit-Debug/Mechanum_autogen/timestamp	468a9f762d5bceaf
+24	186	8019419633167608	C:/Users/dborb/Documents/Qt_projects/Mechanum/build/Desktop_Qt_6_10_1_MinGW_64_bit-Debug/Mechanum_autogen/mocs_compilation.cpp	468a9f762d5bceaf
+188	3451	8019419634814913	CMakeFiles/Mechanum.dir/mainwindow.cpp.obj	fb9898392054cf5e
+171	2852	8010145362280505	CMakeFiles/Mechanum.dir/Mechanum_autogen/mocs_compilation.cpp.obj	1a5b0950db936072
+3451	3731	8019419667449591	Mechanum.exe	85564b834fba647a
+18	56	7991956356596353	CMakeFiles/clean.additional	9999f49c0c425510
+56	66	7991956356977086	clean	706119ba4f4f443c
+5	2512	8019453163887783	build.ninja	698f7a9262a48cc7
+32	182	8019453165227657	Mechanum_autogen/timestamp	468a9f762d5bceaf
+32	182	8019453165227657	Mechanum_autogen/mocs_compilation.cpp	468a9f762d5bceaf
+32	182	8019453165227657	C:/Users/dborb/Documents/Qt_projects/Mechanum/build/Desktop_Qt_6_10_1_MinGW_64_bit-Debug/Mechanum_autogen/timestamp	468a9f762d5bceaf
+32	182	8019453165227657	C:/Users/dborb/Documents/Qt_projects/Mechanum/build/Desktop_Qt_6_10_1_MinGW_64_bit-Debug/Mechanum_autogen/mocs_compilation.cpp	468a9f762d5bceaf
+183	3446	8019453166739591	CMakeFiles/Mechanum.dir/mainwindow.cpp.obj	fb9898392054cf5e
+3446	3823	8019453199377380	Mechanum.exe	85564b834fba647a
