@@ -89,7 +89,7 @@ void UART2_RxCpltCallback()
 		// Initiating new transmission: next character in the Buffer
 		if (HAL_UART_Transmit_IT(&huart2,TxBuf + TxOpnt, 1) != HAL_OK)
 		  {
-		    Error_Handler();
+			TxCnt = 0;
 		  }
 	  }
 }
@@ -106,10 +106,8 @@ void StartUART2Communication()
 	RxIpnt = 0;
 	RxOpnt = 0;
 	RxCnt = 0;
-	if (HAL_UART_Receive_IT(&huart2,RxBuf,1) != HAL_OK)
-	  {
-	    Error_Handler();
-	  }
+	HAL_UART_Receive_IT(&huart2,RxBuf,1);
+
 	TxIpnt = 0;
 	TxOpnt = 0;
 	TxCnt = 0;
@@ -181,7 +179,11 @@ uint32_t PutcUART2TxData(uint8_t data)
 			// Starting Transmit process
 			if (HAL_UART_Transmit_IT(&huart2,TxBuf + TxOpnt,1) != HAL_OK)
 			  {
-			    Error_Handler();
+				TxCnt--;
+				TxIpnt = (TxIpnt == 0) ? (TXBUF2_SIZE - 1) : (TxIpnt - 1);
+
+				if (!prim) __enable_irq();
+				return(ERROR);
 			  }
 		  }
 		if (!prim) __enable_irq();

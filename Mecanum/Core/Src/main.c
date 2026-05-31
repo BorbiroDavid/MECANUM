@@ -24,6 +24,7 @@
 #include <math.h>
 #include "uart2_itcbuf.h"
 #include "AS5047U.h"
+#include <string.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -167,6 +168,11 @@ static uint16_t testSigReset = OFF;			// Test Signal Reset / Cleared flag
 static uint16_t testStart = OFF;			// Test Start flag
 static uint16_t testStop = OFF;
 
+uint8_t counter = 0;
+char tx_buffer[50];
+
+uint16_t N1 = 10, N2 = 0, N3 = 0, N4 = 0;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -200,8 +206,10 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
-	int status;
+	//int status;
 	char message[33];
+	memset(message, 0, sizeof(message));
+	uint8_t rch;
 
 
 
@@ -237,7 +245,7 @@ int main(void)
 	MX_USART6_UART_Init();
 	MX_TIM10_Init();
   /* USER CODE BEGIN 2 */
-  for (uint16_t k = 0; k < TESTSIGN_SIZE; k++) testSignal[k] = 0;
+  //for (uint16_t k = 0; k < TESTSIGN_SIZE; k++) testSignal[k] = 0;
 
   //Signing in to VCP
 	StartUART2Communication();
@@ -261,42 +269,45 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	while (mloopTick == 0) continue;
+	  //----------------- TESZTELŐ SZÁMOLÓ CIKLUS ------------------------------
+	  	/*sprintf(tx_buffer, "Szamlalo: %d\r\n", N1);
+		PutsUART2TxData((uint8_t *)tx_buffer, sizeof(tx_buffer));
+
+		counter++;
+
+		if (counter > 10)
+		{
+			counter = 0;
+		}
+
+		HAL_Delay(1000);  // 1000 ms várakozás
+		*/
+
+	/*while (mloopTick == 0) continue;
 	if (mloopTick > 1)
 		SendErrorSignal(ERR_MCOVR,0);
-	mloopTick = 0;
+	mloopTick = 0; */
 
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
 
-	//Ide jön majd a ctrl loop
 
-/*// Sending Motor Control State to VCP
+// Sending RPM to VCP
 	if (lockDataTrf == OFF)
 	  {
-		switch (motorCtrlType)
-		  {
-			case MSERVO_PROP:
-			case MSERVO_PIPROP:
-			case MSERVO_LQG:
-				sprintf(message,"$CD%04X%04X%04X%04X%04X\r",
-						*(uint16_t *)&dcmCtrlSetp,*(uint16_t *)&motorSpeed,
-						*(uint16_t *)&motorExtAngle,*(uint16_t *)&motorActVal,
-						remTstamp);
-				break;
-			case MCTRL_DIRECT:
-			case MCTRL_PROP:
-			case MCTRL_PI:
-			default:
-				sprintf(message,"$CD%04X%04X%04X%04X%04X\r",
-						*(uint16_t *)&dcmCtrlSetp,*(uint16_t *)&motorSpeed,
-						*(uint16_t *)&motorExtAngle,*(uint16_t *)&motorActVal,
-						remTstamp);
-		  }
+		sprintf(message,"$C%04X%04X%04X%04X\r",N1,N2,N3,N4);
 		PutsUART2TxData((uint8_t *)message,strlen(message));
+		HAL_Delay(1000);
+
+		/*sprintf(message,"$CD%04X%04X%04X%04X%04X\r",
+					*(uint16_t *)&dcmCtrlSetp,*(uint16_t *)&motorSpeed,
+					*(uint16_t *)&motorExtAngle,*(uint16_t *)&motorActVal,
+					remTstamp);
+
+		PutsUART2TxData((uint8_t *)message,strlen(message));*/
 	  }
-	ctrlLoopCnt = 0;*/
+	ctrlLoopCnt = 0;
 	/****** Handling Test Start ************************************************/
 
 	if (testStart == ON)
@@ -314,6 +325,68 @@ int main(void)
 		PutsUART2TxData((uint8_t *)message,strlen(message));
 		testStop = OFF;
 	  }
+
+
+/******	Receiving Messages from VCP *******************************/
+
+	while (TestUART2RxData() == SET)
+	  {
+
+		rch = GetcUART2RxData();
+		if (inmsgPnt2 > 0)
+		  {
+
+			if (rch == CR_C)
+			  {
+				// A complete command is in the buffer
+				inmsgBuf2[inmsgPnt2] = NUL_C;
+				// Processing the received command
+				switch (inmsgBuf2[1])
+				  {
+					case 'C':{
+						if (inmsgPnt2 >= 18)
+						{
+							sscanf((char *)&inmsgBuf2[2], "%4hx%4hx%4hx%4hx", &N1, &N2, &N3, &N4);
+						}
+						else
+						{
+							SendErrorSignal(ERR_ICMD, ERI_ICMD_ILL);
+						}
+
+						inmsgPnt2 = 0;
+						break;
+					}
+
+				    default:inmsgPnt2 = 0;
+					break;
+				  }
+			  }
+		    else
+			{
+			  // Character belonging to Command
+			  inmsgBuf2[inmsgPnt2] = rch;
+			  inmsgPnt2++;
+			  if (inmsgPnt2 >= INMSG_SIZE)
+			  {
+				 // Invalid command: too long
+				 inmsgPnt2 = 0;
+				 SendErrorSignal(ERR_ICMD,ERI_ICMD_ILL);
+			  }
+			}
+		}
+
+		else
+		{ // Waiting for Command Start character
+			if (rch == '$')
+			  {
+				// Command Start character found
+				inmsgBuf2[0] = rch;
+				inmsgPnt2++;
+			  }
+			// else: done nothing - data is dropped
+	    }
+	 }
+
   }
   /* USER CODE END 3 */
 }
@@ -980,11 +1053,26 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN 4 */
 
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+  if (huart->Instance == USART2)
+  {
+	  UART2_RxCpltCallback();
+  }
+}
+
+void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
+{
+  if (huart->Instance == USART2)
+  {
+	  UART2_TxCpltCallback();
+  }
+}
+
 void SendMessageLine (char *message)
 {
   char outmsg[68];
-
-    sprintf(outmsg,"$DM%s\r",message);
+    sprintf(outmsg,"$%s\r",message);
     PutsUART2TxData((uint8_t *)outmsg,strlen(outmsg));
     PutcUART2TxData('\0');
 }
@@ -994,6 +1082,13 @@ void SendErrorSignal(uint16_t sigid, uint32_t info)
 	char message[32];
 	sprintf(message,"$DE%04X,%08lX\r",sigid,info);
 	PutsUART2TxData((uint8_t *)message,strlen(message));
+}
+
+void SendErrorLEDSignal()
+{
+	//HAL_GPIO_WritePin(GPIOC, RED_LED_Pin,GPIO_PIN_SET);
+	//ledState |= LEDR_STATE;
+	//ledRsign = LEDSIGN_PER;
 }
 
 /* USER CODE END 4 */
@@ -1012,6 +1107,7 @@ void Error_Handler(void)
   }
   /* USER CODE END Error_Handler_Debug */
 }
+
 
 #ifdef  USE_FULL_ASSERT
 /**
