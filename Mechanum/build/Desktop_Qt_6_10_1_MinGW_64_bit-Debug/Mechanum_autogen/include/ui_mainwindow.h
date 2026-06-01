@@ -13,6 +13,7 @@
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QComboBox>
 #include <QtWidgets/QFormLayout>
+#include <QtWidgets/QGraphicsView>
 #include <QtWidgets/QGridLayout>
 #include <QtWidgets/QHBoxLayout>
 #include <QtWidgets/QLCDNumber>
@@ -67,6 +68,14 @@ public:
     QLCDNumber *LCD_phi;
     QLabel *label_10;
     QLineEdit *txtOutMsg;
+    QGraphicsView *graphicsView;
+    QLabel *label_11;
+    QWidget *widget;
+    QVBoxLayout *verticalLayout;
+    QLCDNumber *LCD_N1;
+    QLCDNumber *LCD_N2;
+    QLCDNumber *LCD_N3;
+    QLCDNumber *LCD_N4;
     QMenuBar *menubar;
     QStatusBar *statusbar;
 
@@ -74,7 +83,7 @@ public:
     {
         if (MainWindow->objectName().isEmpty())
             MainWindow->setObjectName("MainWindow");
-        MainWindow->resize(700, 650);
+        MainWindow->resize(1500, 750);
         QFont font;
         font.setBold(false);
         MainWindow->setFont(font);
@@ -256,10 +265,62 @@ public:
         txtOutMsg = new QLineEdit(centralwidget);
         txtOutMsg->setObjectName("txtOutMsg");
         txtOutMsg->setGeometry(QRect(470, 410, 191, 28));
+        graphicsView = new QGraphicsView(centralwidget);
+        graphicsView->setObjectName("graphicsView");
+        graphicsView->setGeometry(QRect(670, 50, 801, 641));
+        label_11 = new QLabel(centralwidget);
+        label_11->setObjectName("label_11");
+        label_11->setGeometry(QRect(310, 490, 201, 20));
+        widget = new QWidget(centralwidget);
+        widget->setObjectName("widget");
+        widget->setGeometry(QRect(310, 510, 75, 115));
+        verticalLayout = new QVBoxLayout(widget);
+        verticalLayout->setObjectName("verticalLayout");
+        verticalLayout->setContentsMargins(0, 0, 0, 0);
+        LCD_N1 = new QLCDNumber(widget);
+        LCD_N1->setObjectName("LCD_N1");
+        LCD_N1->setFont(font1);
+        LCD_N1->setStyleSheet(QString::fromUtf8("color: rgb(0, 170, 255);\n"
+"background-color: rgb(0, 0, 65);"));
+        LCD_N1->setDigitCount(7);
+        LCD_N1->setSegmentStyle(QLCDNumber::SegmentStyle::Flat);
+
+        verticalLayout->addWidget(LCD_N1);
+
+        LCD_N2 = new QLCDNumber(widget);
+        LCD_N2->setObjectName("LCD_N2");
+        LCD_N2->setFont(font1);
+        LCD_N2->setStyleSheet(QString::fromUtf8("color: rgb(0, 170, 255);\n"
+"background-color: rgb(0, 0, 65);"));
+        LCD_N2->setDigitCount(7);
+        LCD_N2->setSegmentStyle(QLCDNumber::SegmentStyle::Flat);
+
+        verticalLayout->addWidget(LCD_N2);
+
+        LCD_N3 = new QLCDNumber(widget);
+        LCD_N3->setObjectName("LCD_N3");
+        LCD_N3->setFont(font1);
+        LCD_N3->setStyleSheet(QString::fromUtf8("color: rgb(0, 170, 255);\n"
+"background-color: rgb(0, 0, 65);"));
+        LCD_N3->setDigitCount(7);
+        LCD_N3->setSegmentStyle(QLCDNumber::SegmentStyle::Flat);
+
+        verticalLayout->addWidget(LCD_N3);
+
+        LCD_N4 = new QLCDNumber(widget);
+        LCD_N4->setObjectName("LCD_N4");
+        LCD_N4->setFont(font1);
+        LCD_N4->setStyleSheet(QString::fromUtf8("color: rgb(0, 170, 255);\n"
+"background-color: rgb(0, 0, 65);"));
+        LCD_N4->setDigitCount(7);
+        LCD_N4->setSegmentStyle(QLCDNumber::SegmentStyle::Flat);
+
+        verticalLayout->addWidget(LCD_N4);
+
         MainWindow->setCentralWidget(centralwidget);
         menubar = new QMenuBar(MainWindow);
         menubar->setObjectName("menubar");
-        menubar->setGeometry(QRect(0, 0, 700, 25));
+        menubar->setGeometry(QRect(0, 0, 1500, 25));
         MainWindow->setMenuBar(menubar);
         statusbar = new QStatusBar(MainWindow);
         statusbar->setObjectName("statusbar");
@@ -272,7 +333,7 @@ public:
 
     void retranslateUi(QMainWindow *MainWindow)
     {
-        MainWindow->setWindowTitle(QCoreApplication::translate("MainWindow", "MainWindow", nullptr));
+        MainWindow->setWindowTitle(QCoreApplication::translate("MainWindow", "Mecanum App", nullptr));
         btnConnectNucleo->setText(QCoreApplication::translate("MainWindow", "Connect", nullptr));
         label_8->setText(QCoreApplication::translate("MainWindow", "UART VCP comm log", nullptr));
         label_9->setText(QCoreApplication::translate("MainWindow", "Wizfi comm log", nullptr));
@@ -285,6 +346,7 @@ public:
         btnConnectWizfi->setText(QCoreApplication::translate("MainWindow", "Connect to Wizfi", nullptr));
         label_6->setText(QCoreApplication::translate("MainWindow", "IP Adress", nullptr));
         label_10->setText(QCoreApplication::translate("MainWindow", "Kik\303\274ld\303\266tt String:", nullptr));
+        label_11->setText(QCoreApplication::translate("MainWindow", "Fordulatsz\303\241mok kerekenk\303\251nt", nullptr));
     } // retranslateUi
 
 };

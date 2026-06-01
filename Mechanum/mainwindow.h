@@ -8,6 +8,8 @@
 #include <QHostAddress>
 #include <QSerialPort>
 #include <QSerialPortInfo>
+#include <QGraphicsScene>
+#include <QGraphicsPixmapItem>
 
 
 QT_BEGIN_NAMESPACE
@@ -28,6 +30,8 @@ private slots:
     void loopSDL();
     void SendVCP();
     void SendWizfi();
+    void Simulation();
+    void Control_and_Display();
     void on_btnConnectWizfi_clicked();
     void on_btnConnectNucleo_clicked();
 
@@ -40,6 +44,8 @@ private:
     void findController();
     QSerialPort *serialPort;
     QByteArray readBuffer;
+    QGraphicsScene *scene;
+    QGraphicsPixmapItem *carItem;
 
     //VCP beállításai
     struct SerialConfig {
@@ -63,6 +69,8 @@ private:
     QString rx_demo = "";
 
 
+
+
     // SDL Variables
     SDL_Gamepad *m_gamepad = nullptr;   // The controller object (Pointer)
     SDL_JoystickID m_gamepadId = 0;     // The controller ID (Number)
@@ -71,6 +79,7 @@ private:
     QTimer *m_pollTimer;
     QTimer *ControlTimer;
     QTimer *SendDataTimer;
+    QTimer *SimulationTimer;
 
 
     //Wizfi

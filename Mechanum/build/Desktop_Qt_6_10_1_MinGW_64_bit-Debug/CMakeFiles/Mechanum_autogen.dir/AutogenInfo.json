@@ -1,19 +1,19 @@
 {
 	"AUTOGEN_COMMAND_LINE_LENGTH_MAX" : 32000,
-	"BUILD_DIR" : "C:/Users/dborb/Documents/Qt_projects/Mechanum/build/Desktop_Qt_6_10_1_MinGW_64_bit-Debug/Mechanum_autogen",
-	"CMAKE_BINARY_DIR" : "C:/Users/dborb/Documents/Qt_projects/Mechanum/build/Desktop_Qt_6_10_1_MinGW_64_bit-Debug",
-	"CMAKE_CURRENT_BINARY_DIR" : "C:/Users/dborb/Documents/Qt_projects/Mechanum/build/Desktop_Qt_6_10_1_MinGW_64_bit-Debug",
-	"CMAKE_CURRENT_SOURCE_DIR" : "C:/Users/dborb/Documents/Qt_projects/Mechanum",
+	"BUILD_DIR" : "C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/build/Desktop_Qt_6_10_1_MinGW_64_bit-Debug/Mechanum_autogen",
+	"CMAKE_BINARY_DIR" : "C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/build/Desktop_Qt_6_10_1_MinGW_64_bit-Debug",
+	"CMAKE_CURRENT_BINARY_DIR" : "C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/build/Desktop_Qt_6_10_1_MinGW_64_bit-Debug",
+	"CMAKE_CURRENT_SOURCE_DIR" : "C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum",
 	"CMAKE_EXECUTABLE" : "D:/qt/Tools/CMake_64/bin/cmake.exe",
 	"CMAKE_LIST_FILES" : 
 	[
-		"C:/Users/dborb/Documents/Qt_projects/Mechanum/CMakeLists.txt",
-		"C:/Users/dborb/Documents/Qt_projects/Mechanum/build/Desktop_Qt_6_10_1_MinGW_64_bit-Debug/.qtc/package-manager/auto-setup.cmake",
-		"C:/Users/dborb/Documents/Qt_projects/Mechanum/build/Desktop_Qt_6_10_1_MinGW_64_bit-Debug/CMakeFiles/3.30.5/CMakeSystem.cmake",
-		"C:/Users/dborb/Documents/Qt_projects/Mechanum/build/Desktop_Qt_6_10_1_MinGW_64_bit-Debug/.qtc/package-manager/maintenance_tool_provider.cmake",
+		"C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/CMakeLists.txt",
+		"C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/build/Desktop_Qt_6_10_1_MinGW_64_bit-Debug/.qtc/package-manager/auto-setup.cmake",
+		"C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/build/Desktop_Qt_6_10_1_MinGW_64_bit-Debug/CMakeFiles/3.30.5/CMakeSystem.cmake",
+		"C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/build/Desktop_Qt_6_10_1_MinGW_64_bit-Debug/.qtc/package-manager/maintenance_tool_provider.cmake",
 		"D:/qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeSystemSpecificInitialize.cmake",
 		"D:/qt/Tools/CMake_64/share/cmake-3.30/Modules/Platform/Windows-Initialize.cmake",
-		"C:/Users/dborb/Documents/Qt_projects/Mechanum/build/Desktop_Qt_6_10_1_MinGW_64_bit-Debug/CMakeFiles/3.30.5/CMakeCXXCompiler.cmake",
+		"C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/build/Desktop_Qt_6_10_1_MinGW_64_bit-Debug/CMakeFiles/3.30.5/CMakeCXXCompiler.cmake",
 		"D:/qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeSystemSpecificInformation.cmake",
 		"D:/qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeGenericSystem.cmake",
 		"D:/qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeInitializeConfigs.cmake",
@@ -26,7 +26,7 @@
 		"D:/qt/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/CMakeCommonCompilerMacros.cmake",
 		"D:/qt/Tools/CMake_64/share/cmake-3.30/Modules/Platform/Windows-GNU-CXX.cmake",
 		"D:/qt/Tools/CMake_64/share/cmake-3.30/Modules/Platform/Windows-GNU.cmake",
-		"C:/Users/dborb/Documents/Qt_projects/Mechanum/build/Desktop_Qt_6_10_1_MinGW_64_bit-Debug/CMakeFiles/3.30.5/CMakeRCCompiler.cmake",
+		"C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/build/Desktop_Qt_6_10_1_MinGW_64_bit-Debug/CMakeFiles/3.30.5/CMakeRCCompiler.cmake",
 		"D:/qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeRCInformation.cmake",
 		"D:/qt/Tools/CMake_64/share/cmake-3.30/Modules/Platform/Windows-windres.cmake",
 		"D:/qt/Tools/CMake_64/share/cmake-3.30/Modules/Platform/Windows-GNU-CXX-ABI.cmake",
@@ -346,33 +346,33 @@
 		"D:/qt/6.10.1/mingw_64/lib/cmake/Qt6/QtPublicWindowsHelpers.cmake",
 		"D:/qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeFindDependencyMacro.cmake",
 		"D:/qt/6.10.1/mingw_64/lib/cmake/Qt6/Qt6Dependencies.cmake",
-		"D:/Libraries/SDL3/cmake/SDL3ConfigVersion.cmake",
-		"D:/Libraries/SDL3/x86_64-w64-mingw32/lib/cmake/SDL3/SDL3ConfigVersion.cmake",
-		"D:/Libraries/SDL3/cmake/SDL3Config.cmake",
-		"D:/Libraries/SDL3/x86_64-w64-mingw32/lib/cmake/SDL3/SDL3Config.cmake",
+		"C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/Libraries/SDL3/cmake/SDL3ConfigVersion.cmake",
+		"C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/Libraries/SDL3/x86_64-w64-mingw32/lib/cmake/SDL3/SDL3ConfigVersion.cmake",
+		"C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/Libraries/SDL3/cmake/SDL3Config.cmake",
+		"C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/Libraries/SDL3/x86_64-w64-mingw32/lib/cmake/SDL3/SDL3Config.cmake",
 		"D:/qt/Tools/CMake_64/share/cmake-3.30/Modules/FeatureSummary.cmake",
-		"D:/Libraries/SDL3/x86_64-w64-mingw32/lib/cmake/SDL3/SDL3headersTargets.cmake",
-		"D:/Libraries/SDL3/x86_64-w64-mingw32/lib/cmake/SDL3/SDL3sharedTargets.cmake",
-		"D:/Libraries/SDL3/x86_64-w64-mingw32/lib/cmake/SDL3/SDL3sharedTargets-release.cmake",
-		"D:/Libraries/SDL3/x86_64-w64-mingw32/lib/cmake/SDL3/SDL3testTargets.cmake",
-		"D:/Libraries/SDL3/x86_64-w64-mingw32/lib/cmake/SDL3/SDL3testTargets-release.cmake"
+		"C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/Libraries/SDL3/x86_64-w64-mingw32/lib/cmake/SDL3/SDL3headersTargets.cmake",
+		"C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/Libraries/SDL3/x86_64-w64-mingw32/lib/cmake/SDL3/SDL3sharedTargets.cmake",
+		"C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/Libraries/SDL3/x86_64-w64-mingw32/lib/cmake/SDL3/SDL3sharedTargets-release.cmake",
+		"C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/Libraries/SDL3/x86_64-w64-mingw32/lib/cmake/SDL3/SDL3testTargets.cmake",
+		"C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/Libraries/SDL3/x86_64-w64-mingw32/lib/cmake/SDL3/SDL3testTargets-release.cmake"
 	],
-	"CMAKE_SOURCE_DIR" : "C:/Users/dborb/Documents/Qt_projects/Mechanum",
+	"CMAKE_SOURCE_DIR" : "C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum",
 	"CROSS_CONFIG" : false,
-	"DEP_FILE" : "C:/Users/dborb/Documents/Qt_projects/Mechanum/build/Desktop_Qt_6_10_1_MinGW_64_bit-Debug/Mechanum_autogen/deps",
+	"DEP_FILE" : "C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/build/Desktop_Qt_6_10_1_MinGW_64_bit-Debug/Mechanum_autogen/deps",
 	"DEP_FILE_RULE_NAME" : "Mechanum_autogen/timestamp",
 	"HEADERS" : 
 	[
 		[
-			"C:/Users/dborb/Documents/Qt_projects/Mechanum/mainwindow.h",
+			"C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/mainwindow.h",
 			"MU",
 			"EWIEGA46WW/moc_mainwindow.cpp",
 			null
 		]
 	],
 	"HEADER_EXTENSIONS" : [ "h", "hh", "h++", "hm", "hpp", "hxx", "in", "txx" ],
-	"INCLUDE_DIR" : "C:/Users/dborb/Documents/Qt_projects/Mechanum/build/Desktop_Qt_6_10_1_MinGW_64_bit-Debug/Mechanum_autogen/include",
-	"MOC_COMPILATION_FILE" : "C:/Users/dborb/Documents/Qt_projects/Mechanum/build/Desktop_Qt_6_10_1_MinGW_64_bit-Debug/Mechanum_autogen/mocs_compilation.cpp",
+	"INCLUDE_DIR" : "C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/build/Desktop_Qt_6_10_1_MinGW_64_bit-Debug/Mechanum_autogen/include",
+	"MOC_COMPILATION_FILE" : "C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/build/Desktop_Qt_6_10_1_MinGW_64_bit-Debug/Mechanum_autogen/mocs_compilation.cpp",
 	"MOC_DEFINITIONS" : 
 	[
 		"MINGW_HAS_SECURE_API=1",
@@ -398,7 +398,7 @@
 	],
 	"MOC_INCLUDES" : 
 	[
-		"D:/Libraries/SDL3/x86_64-w64-mingw32/include",
+		"C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/Libraries/SDL3/x86_64-w64-mingw32/include",
 		"D:/qt/6.10.1/mingw_64/include/QtCore",
 		"D:/qt/6.10.1/mingw_64/include",
 		"D:/qt/6.10.1/mingw_64/mkspecs/win32-g++",
@@ -433,22 +433,26 @@
 		"-c",
 		"D:/qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeCXXCompilerABI.cpp"
 	],
-	"MOC_PREDEFS_FILE" : "C:/Users/dborb/Documents/Qt_projects/Mechanum/build/Desktop_Qt_6_10_1_MinGW_64_bit-Debug/Mechanum_autogen/moc_predefs.h",
+	"MOC_PREDEFS_FILE" : "C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/build/Desktop_Qt_6_10_1_MinGW_64_bit-Debug/Mechanum_autogen/moc_predefs.h",
 	"MOC_RELAXED_MODE" : false,
 	"MOC_SKIP" : [],
 	"MULTI_CONFIG" : false,
 	"PARALLEL" : 6,
-	"PARSE_CACHE_FILE" : "C:/Users/dborb/Documents/Qt_projects/Mechanum/build/Desktop_Qt_6_10_1_MinGW_64_bit-Debug/CMakeFiles/Mechanum_autogen.dir/ParseCache.txt",
+	"PARSE_CACHE_FILE" : "C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/build/Desktop_Qt_6_10_1_MinGW_64_bit-Debug/CMakeFiles/Mechanum_autogen.dir/ParseCache.txt",
 	"QT_MOC_EXECUTABLE" : "D:/qt/6.10.1/mingw_64/bin/moc.exe",
 	"QT_UIC_EXECUTABLE" : "D:/qt/6.10.1/mingw_64/bin/uic.exe",
 	"QT_VERSION_MAJOR" : 6,
 	"QT_VERSION_MINOR" : 10,
-	"SETTINGS_FILE" : "C:/Users/dborb/Documents/Qt_projects/Mechanum/build/Desktop_Qt_6_10_1_MinGW_64_bit-Debug/CMakeFiles/Mechanum_autogen.dir/AutogenUsed.txt",
+	"SETTINGS_FILE" : "C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/build/Desktop_Qt_6_10_1_MinGW_64_bit-Debug/CMakeFiles/Mechanum_autogen.dir/AutogenUsed.txt",
 	"SOURCES" : 
 	[
-		[ "C:/Users/dborb/Documents/Qt_projects/Mechanum/main.cpp", "MU", null ],
 		[
-			"C:/Users/dborb/Documents/Qt_projects/Mechanum/mainwindow.cpp",
+			"C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/main.cpp",
+			"MU",
+			null
+		],
+		[
+			"C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/mainwindow.cpp",
 			"MU",
 			null
 		]

@@ -1,65 +1,65 @@
-C:/Users/dborb/Documents/Qt_projects/Mechanum/build/Desktop_Qt_6_10_1_MinGW_64_bit-Debug/Mechanum_autogen/EWIEGA46WW/moc_mainwindow.cpp: C:/Users/dborb/Documents/Qt_projects/Mechanum/mainwindow.h \
-  C:/Users/dborb/Documents/Qt_projects/Mechanum/build/Desktop_Qt_6_10_1_MinGW_64_bit-Debug/Mechanum_autogen/moc_predefs.h \
-  D:/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL.h \
-  D:/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_assert.h \
-  D:/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_asyncio.h \
-  D:/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_atomic.h \
-  D:/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_audio.h \
-  D:/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_begin_code.h \
-  D:/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_bits.h \
-  D:/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_blendmode.h \
-  D:/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_camera.h \
-  D:/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_clipboard.h \
-  D:/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_close_code.h \
-  D:/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_cpuinfo.h \
-  D:/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_dialog.h \
-  D:/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_dlopennote.h \
-  D:/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_endian.h \
-  D:/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_error.h \
-  D:/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_events.h \
-  D:/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_filesystem.h \
-  D:/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_gamepad.h \
-  D:/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_gpu.h \
-  D:/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_guid.h \
-  D:/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_haptic.h \
-  D:/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_hidapi.h \
-  D:/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_hints.h \
-  D:/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_init.h \
-  D:/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_iostream.h \
-  D:/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_joystick.h \
-  D:/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_keyboard.h \
-  D:/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_keycode.h \
-  D:/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_loadso.h \
-  D:/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_locale.h \
-  D:/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_log.h \
-  D:/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_messagebox.h \
-  D:/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_metal.h \
-  D:/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_misc.h \
-  D:/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_mouse.h \
-  D:/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_mutex.h \
-  D:/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_oldnames.h \
-  D:/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_pen.h \
-  D:/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_pixels.h \
-  D:/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_platform.h \
-  D:/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_platform_defines.h \
-  D:/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_power.h \
-  D:/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_process.h \
-  D:/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_properties.h \
-  D:/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_rect.h \
-  D:/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_render.h \
-  D:/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_scancode.h \
-  D:/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_sensor.h \
-  D:/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_stdinc.h \
-  D:/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_storage.h \
-  D:/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_surface.h \
-  D:/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_system.h \
-  D:/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_thread.h \
-  D:/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_time.h \
-  D:/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_timer.h \
-  D:/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_touch.h \
-  D:/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_tray.h \
-  D:/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_version.h \
-  D:/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_video.h \
+C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/build/Desktop_Qt_6_10_1_MinGW_64_bit-Debug/Mechanum_autogen/EWIEGA46WW/moc_mainwindow.cpp: C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/mainwindow.h \
+  C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/build/Desktop_Qt_6_10_1_MinGW_64_bit-Debug/Mechanum_autogen/moc_predefs.h \
+  C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL.h \
+  C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_assert.h \
+  C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_asyncio.h \
+  C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_atomic.h \
+  C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_audio.h \
+  C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_begin_code.h \
+  C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_bits.h \
+  C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_blendmode.h \
+  C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_camera.h \
+  C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_clipboard.h \
+  C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_close_code.h \
+  C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_cpuinfo.h \
+  C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_dialog.h \
+  C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_dlopennote.h \
+  C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_endian.h \
+  C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_error.h \
+  C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_events.h \
+  C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_filesystem.h \
+  C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_gamepad.h \
+  C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_gpu.h \
+  C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_guid.h \
+  C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_haptic.h \
+  C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_hidapi.h \
+  C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_hints.h \
+  C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_init.h \
+  C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_iostream.h \
+  C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_joystick.h \
+  C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_keyboard.h \
+  C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_keycode.h \
+  C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_loadso.h \
+  C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_locale.h \
+  C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_log.h \
+  C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_messagebox.h \
+  C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_metal.h \
+  C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_misc.h \
+  C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_mouse.h \
+  C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_mutex.h \
+  C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_oldnames.h \
+  C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_pen.h \
+  C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_pixels.h \
+  C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_platform.h \
+  C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_platform_defines.h \
+  C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_power.h \
+  C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_process.h \
+  C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_properties.h \
+  C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_rect.h \
+  C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_render.h \
+  C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_scancode.h \
+  C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_sensor.h \
+  C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_stdinc.h \
+  C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_storage.h \
+  C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_surface.h \
+  C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_system.h \
+  C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_thread.h \
+  C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_time.h \
+  C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_timer.h \
+  C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_touch.h \
+  C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_tray.h \
+  C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_version.h \
+  C:/Users/dborb/Desktop/Erzbeav_2/MECANUM/Mechanum/Libraries/SDL3/x86_64-w64-mingw32/include/SDL3/SDL_video.h \
   D:/qt/6.10.1/mingw_64/include/QtCore/QTimer \
   D:/qt/6.10.1/mingw_64/include/QtCore/q17memory.h \
   D:/qt/6.10.1/mingw_64/include/QtCore/q20functional.h \
@@ -209,7 +209,9 @@ C:/Users/dborb/Documents/Qt_projects/Mechanum/build/Desktop_Qt_6_10_1_MinGW_64_b
   D:/qt/6.10.1/mingw_64/include/QtGui/qimage.h \
   D:/qt/6.10.1/mingw_64/include/QtGui/qkeysequence.h \
   D:/qt/6.10.1/mingw_64/include/QtGui/qpaintdevice.h \
+  D:/qt/6.10.1/mingw_64/include/QtGui/qpainterpath.h \
   D:/qt/6.10.1/mingw_64/include/QtGui/qpalette.h \
+  D:/qt/6.10.1/mingw_64/include/QtGui/qpen.h \
   D:/qt/6.10.1/mingw_64/include/QtGui/qpixelformat.h \
   D:/qt/6.10.1/mingw_64/include/QtGui/qpixmap.h \
   D:/qt/6.10.1/mingw_64/include/QtGui/qpolygon.h \
@@ -236,7 +238,11 @@ C:/Users/dborb/Documents/Qt_projects/Mechanum/build/Desktop_Qt_6_10_1_MinGW_64_b
   D:/qt/6.10.1/mingw_64/include/QtSerialPort/qserialportglobal.h \
   D:/qt/6.10.1/mingw_64/include/QtSerialPort/qserialportinfo.h \
   D:/qt/6.10.1/mingw_64/include/QtSerialPort/qtserialportexports.h \
+  D:/qt/6.10.1/mingw_64/include/QtWidgets/QGraphicsPixmapItem \
+  D:/qt/6.10.1/mingw_64/include/QtWidgets/QGraphicsScene \
   D:/qt/6.10.1/mingw_64/include/QtWidgets/QMainWindow \
+  D:/qt/6.10.1/mingw_64/include/QtWidgets/qgraphicsitem.h \
+  D:/qt/6.10.1/mingw_64/include/QtWidgets/qgraphicsscene.h \
   D:/qt/6.10.1/mingw_64/include/QtWidgets/qmainwindow.h \
   D:/qt/6.10.1/mingw_64/include/QtWidgets/qsizepolicy.h \
   D:/qt/6.10.1/mingw_64/include/QtWidgets/qtabwidget.h \

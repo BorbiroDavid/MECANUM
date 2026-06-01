@@ -4,8 +4,12 @@
 #include <QDebug>
 #include <QScrollBar>
 #include <QLCDNumber>
+#include <QGraphicsItem>
+#include <QPixmap>
+#include <QGraphicsScene>
+
 //#include <stdio.h>
-#include <math.h>
+#include <cmath>
 
 
  //Mechanum modell geometriai állandói
@@ -18,28 +22,38 @@
 #define vy_scaler 10000.0
 #define w_scaler 10000.0
 
-#define RPS_Factor 13440000 // Scale factor between rps and period
+#define RPS_Factor 1344 // Scale factor between rps and period
+
+//Szimulációhoz
+float currentTheta = 0.0;
+float currentX = 0.0;
+float currentY = 0.0;
 
 //Valós sebességek [m/s]
-float vx = 0;
-float vy = 0;
-float w_z = 0;
-float phi = 0;
-float phi_ref = 0;
+float vx = 0.0;
+float vy = 0.0;
+float w_z = 0.0;
+float phi = 0.0;
 
 //Lokális fordulatszámok [1/s]
-float w1 = 0;
-float w2 = 0;
-float w3 = 0;
-float w4 = 0;
+float w1 = 0.0;
+float w2 = 0.0;
+float w3 = 0.0;
+float w4 = 0.0;
 
 //Skálázott fordulatszámok
-Sint16 N1 = 0;
-Sint16 N2 = 0;
-Sint16 N3 = 0;
-Sint16 N4 = 0;
+Sint16 N1_out = 0, N1_in =0;
+Sint16 N2_out = 0, N2_in =0;
+Sint16 N3_out = 0, N3_in =0;
+Sint16 N4_out = 0, N4_in =0;
 
 Sint16 Wizfi_Active = 0;
+
+Sint16 ctrlr_lx = 0;
+Sint16 ctrlr_ly = 0;
+Sint16 ctrlr_rx = 0;
+Sint16 ctrlr_ry = 0;
+
 
 QString message;
 
@@ -50,34 +64,53 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
-    // Kezdeti állapot beállítása
-    ui->btnConnectWizfi->setText("Csatlakozás");
-
     populatePortList();
 
-    // A QSerialPort readyRead jele szól nekünk, ha új adat érkezett az USB-n
+    // A QSerialPort readyRead jele
     connect(serialPort, &QSerialPort::readyRead, this, &MainWindow::readSerialData);
 
     // Initialize SDL
     SDL_Init(SDL_INIT_GAMEPAD);
 
+    socket = (new QTcpSocket(this)); // Initialize the socket
+
+    // Connect socket signals
+    connect(socket, &QTcpSocket::connected, this, &MainWindow::onSocketConnected);
+    connect(socket, &QTcpSocket::errorOccurred, this, &MainWindow::onSocketError);
+
+    //Grafikus szimuláció inicializálása
+    scene = new QGraphicsScene(this);
+    ui->graphicsView->setScene(scene);
+    QPixmap carPixmap("Mecanum.png");
+    carItem = new QGraphicsPixmapItem(carPixmap);
+    scene->addItem(carItem);
+    carItem->setTransformOriginPoint(carItem->boundingRect().center());
+    carItem->setScale(0.2);
+
+    if (carPixmap.isNull()) {
+        qDebug() << "Hiba: A kiskocsi képe nem tölthető be!";
+    }
+
     // Timer to poll SDL events every 16ms (~60 FPS)
     m_pollTimer = new QTimer(this);
     connect(m_pollTimer, &QTimer::timeout, this, &MainWindow::loopSDL);
-    m_pollTimer->start(16);
+    m_pollTimer->start(10);
 
     //Timer to send on VCP port
     SendDataTimer = new QTimer(this);
     connect(SendDataTimer, &QTimer::timeout, this, &MainWindow::SendVCP);
     SendDataTimer->start(50);
 
-    socket = (new QTcpSocket(this)); // Initialize the socket
+    //Timer for graphical simulation
+    SimulationTimer = new QTimer(this);
+    connect(SimulationTimer, &QTimer::timeout, this, &MainWindow::Simulation);
+    SimulationTimer->start(100);
 
-    // Connect socket signals to custom slots
-    connect(socket, &QTcpSocket::connected, this, &MainWindow::onSocketConnected);
-    //connect(socket, &QTcpSocket::readyRead, this, &MainWindow::onSocketReadyRead);
-    // Errorhandling
-    connect(socket, &QTcpSocket::errorOccurred, this, &MainWindow::onSocketError);
+    //Timer for Control and Display updates
+    ControlTimer = new QTimer(this);
+    connect(ControlTimer, &QTimer::timeout, this, &MainWindow::Control_and_Display);
+    ControlTimer->start(20);
+
 }
 
 MainWindow::~MainWindow()
@@ -95,12 +128,12 @@ MainWindow::~MainWindow()
 
     if(socket->isOpen())
         socket->close();
+
+
 }
 
 void MainWindow::loopSDL()
 {
-
-
     // SDL3 Event Loop
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
@@ -130,56 +163,10 @@ void MainWindow::loopSDL()
     // Read Data if connected
     if (m_gamepad) {
         // Read Controller data
-        Sint16 lx = SDL_GetGamepadAxis(m_gamepad, SDL_GAMEPAD_AXIS_LEFTX);
-        Sint16 ly = SDL_GetGamepadAxis(m_gamepad, SDL_GAMEPAD_AXIS_LEFTY);
-        Sint16 rx = SDL_GetGamepadAxis(m_gamepad, SDL_GAMEPAD_AXIS_RIGHTX);
-        Sint16 ry = SDL_GetGamepadAxis(m_gamepad, SDL_GAMEPAD_AXIS_RIGHTY);
-
-        vx = -ly / vx_scaler; //Koordinátacsere, hogy a hosszanti sebesség legyen a vx és "-", hogy az előre legyen a pozitív
-        vy = lx / vy_scaler;
-        w_z = rx / w_scaler;
-
-        /*float r_length = sqrt(pow(rx,2)+pow(ry,2));
-        if(r_length > 1000){
-            phi_ref = phi;
-            phi = tan(double(rx/ry));
-            w_z = (phi-phi_ref) / w_scaler;
-        }
-        else w_z = 0;*/
-
-
-        w1 = 1 / mech_R * (vx + vy - (mech_lx+mech_ly) * w_z);
-        w2 = 1 / mech_R * (-vx + vy + (mech_lx+mech_ly) * w_z);
-        w3 = 1 / mech_R * (-vx + vy - (mech_lx+mech_ly) * w_z);
-        w4 = 1 / mech_R * (vx + vy + (mech_lx+mech_ly) * w_z);
-
-        N1 =  Sint16(trunc(w1 * RPS_Factor));
-        N2 =  Sint16(trunc(w2 * RPS_Factor));
-        N3 =  Sint16(trunc(w3 * RPS_Factor));
-        N4 =  Sint16(trunc(w4 * RPS_Factor));
-
-        ui->LCDLeftX->display(lx);
-        ui->LCDLeftY->display(ly);
-        ui->LCDRightX->display(rx);
-        ui->LCDRightY->display(ry);
-        ui->LCD_vx->display(double(vx)*100);
-        ui->LCD_vy->display(vy);
-        ui->LCD_phi->display(w_z);
-
-
-        message = QString("$C%1%2%3%4\r")
-                      .arg((quint16)N1, 4, 16, QLatin1Char('0'))
-                      .arg((quint16)N2, 4, 16, QLatin1Char('0'))
-                      .arg((quint16)N3, 4, 16, QLatin1Char('0'))
-                      .arg((quint16)N4, 4, 16, QLatin1Char('0'));
-
-        message = message.toUpper();
-        //Itt nem küldjük ki, hanem egy külön loopban van küldve 50ms-onként
-
-        if(Wizfi_Active == 1){
-            SendWizfi();
-        }
-
+        ctrlr_lx = SDL_GetGamepadAxis(m_gamepad, SDL_GAMEPAD_AXIS_LEFTX);
+        ctrlr_ly = SDL_GetGamepadAxis(m_gamepad, SDL_GAMEPAD_AXIS_LEFTY);
+        ctrlr_rx = SDL_GetGamepadAxis(m_gamepad, SDL_GAMEPAD_AXIS_RIGHTX);
+        ctrlr_ry = SDL_GetGamepadAxis(m_gamepad, SDL_GAMEPAD_AXIS_RIGHTY);
     }
 }
 
@@ -285,30 +272,23 @@ void MainWindow::readSerialData()
 
 void MainWindow::parseData(const QByteArray &data)
 {
-    // C példád: "$CD%04X%04X%04X%04X%04X"
-    // Felépítés: 3 betű ($CD) + 5 db 4 karakteres hex string = 23 karakter
-    if (data.startsWith("$CD") && data.length() >= 23) {
+    if (data.startsWith("$C") && data.length() >= 18) {
 
         bool ok; // Ide jelzi a Qt, ha sikeres volt a hex->int konverzió
         QString msgString = QString::fromLatin1(data);
 
         // A .mid(kezdet_index, hossz) függvénnyel vágjuk ki a darabokat
         // A .toUShort(..., 16) alakítja át a szöveges hexát egy 16 bites előjel nélküli egész számmá
-        uint16_t tempSetp   = QStringView(msgString).mid(3, 4).toUShort(&ok, 16);
-        uint16_t tempSpeed  = QStringView(msgString).mid(7, 4).toUShort(&ok, 16);
-        uint16_t tempAngle  = QStringView(msgString).mid(11, 4).toUShort(&ok, 16);
-        uint16_t tempActVal = QStringView(msgString).mid(15, 4).toUShort(&ok, 16);
-        uint16_t tempTstamp = QStringView(msgString).mid(19, 4).toUShort(&ok, 16);
+        uint16_t temp_N1_in   = QStringView(msgString).mid(3, 4).toUShort(&ok, 16);
+        uint16_t temp_N2_in  = QStringView(msgString).mid(7, 4).toUShort(&ok, 16);
+        uint16_t temp_N3_in  = QStringView(msgString).mid(11, 4).toUShort(&ok, 16);
+        uint16_t temp_N4_in = QStringView(msgString).mid(15, 4).toUShort(&ok, 16);
 
-
-        // Megjelenítés a UI-on:
         if (ok) {
-            dcmCtrlSetp   = tempSetp;
-            motorSpeed    = tempSpeed;
-            motorExtAngle = tempAngle;
-            motorActVal   = tempActVal;
-            remTstamp     = tempTstamp;
-
+            N1_in = temp_N1_in;
+            N2_in = temp_N2_in;
+            N3_in = temp_N3_in;
+            N4_in = temp_N4_in;
         }
 
     }
@@ -340,3 +320,67 @@ void MainWindow::on_btnConnectWizfi_clicked()
     socket->connectToHost(ipAddress, port);
 }
 
+void MainWindow::Simulation(){
+
+    const float dt = 0.1;
+    currentTheta += w_z * dt;
+
+    // 3. Pozíció frissítése a jármű orientációja alapján (B verzió)
+    float vx_global = (vx * std::sin(currentTheta) + vy * std::cos(currentTheta)) * 30.0f; // Qt Y iránya miatt itt + van a forgatásiránytól függően
+    float vy_global = (vx * std::cos(currentTheta) - vy * std::sin(currentTheta)) * -30.0f;
+
+    currentX += vx_global * dt;
+    currentY += vy_global * dt;
+
+    carItem->setPos(currentX, currentY);
+    // Átváltás radiánból fokba
+    float theta_Deg = currentTheta * (180.0 / M_PI);
+    carItem->setRotation(theta_Deg);
+
+}
+
+void MainWindow::Control_and_Display(){
+
+    if(abs(ctrlr_ly) > 300) vx = -ctrlr_ly / vx_scaler;
+    else vx = 0;    //Koordinátacsere, hogy a hosszanti sebesség legyen a vx és "-", hogy az előre legyen a pozitív
+    if(abs(ctrlr_lx)> 300) vy = ctrlr_lx / vy_scaler;
+    else vy = 0;
+    if(abs(ctrlr_rx)>300) w_z = ctrlr_rx / w_scaler;
+    else w_z = 0;
+
+
+    w1 = 1 / mech_R * (vx + vy - (mech_lx+mech_ly) * w_z);
+    w2 = 1 / mech_R * (-vx + vy + (mech_lx+mech_ly) * w_z);
+    w3 = 1 / mech_R * (-vx + vy - (mech_lx+mech_ly) * w_z);
+    w4 = 1 / mech_R * (vx + vy + (mech_lx+mech_ly) * w_z);
+
+    N1_out =  Sint16(trunc(w1 * RPS_Factor));
+    N2_out =  Sint16(trunc(w2 * RPS_Factor));
+    N3_out =  Sint16(trunc(w3 * RPS_Factor));
+    N4_out =  Sint16(trunc(w4 * RPS_Factor));
+
+    ui->LCDLeftX->display(ctrlr_lx);
+    ui->LCDLeftY->display(ctrlr_ly);
+    ui->LCDRightX->display(ctrlr_rx);
+    ui->LCDRightY->display(ctrlr_ry);
+    ui->LCD_vx->display(vx);
+    ui->LCD_vy->display(vy);
+    ui->LCD_phi->display(w_z);
+    ui->LCD_N1->display(N1_out);
+    ui->LCD_N2->display(N2_out);
+    ui->LCD_N3->display(N3_out);
+    ui->LCD_N4->display(N4_out);
+
+    message = QString("$C%1%2%3%4\r")
+                  .arg((quint16)N1_out, 4, 16, QLatin1Char('0'))
+                  .arg((quint16)N2_out, 4, 16, QLatin1Char('0'))
+                  .arg((quint16)N3_out, 4, 16, QLatin1Char('0'))
+                  .arg((quint16)N4_out, 4, 16, QLatin1Char('0'));
+
+    message = message.toUpper();
+    //Itt nem küldjük ki, hanem egy külön loopban van küldve 50ms-onként
+
+    if(Wizfi_Active == 1){
+        SendWizfi();
+    }
+}

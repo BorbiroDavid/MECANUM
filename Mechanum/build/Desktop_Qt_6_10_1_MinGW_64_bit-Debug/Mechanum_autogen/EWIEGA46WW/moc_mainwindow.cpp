@@ -43,6 +43,8 @@ template <> constexpr inline auto MainWindow::qt_create_metaobjectdata<qt_meta_t
         "",
         "SendVCP",
         "SendWizfi",
+        "Simulation",
+        "Control_and_Display",
         "on_btnConnectWizfi_clicked",
         "on_btnConnectNucleo_clicked",
         "readSerialData",
@@ -59,17 +61,21 @@ template <> constexpr inline auto MainWindow::qt_create_metaobjectdata<qt_meta_t
         QtMocHelpers::SlotData<void()>(3, 2, QMC::AccessPrivate, QMetaType::Void),
         // Slot 'SendWizfi'
         QtMocHelpers::SlotData<void()>(4, 2, QMC::AccessPrivate, QMetaType::Void),
-        // Slot 'on_btnConnectWizfi_clicked'
+        // Slot 'Simulation'
         QtMocHelpers::SlotData<void()>(5, 2, QMC::AccessPrivate, QMetaType::Void),
-        // Slot 'on_btnConnectNucleo_clicked'
+        // Slot 'Control_and_Display'
         QtMocHelpers::SlotData<void()>(6, 2, QMC::AccessPrivate, QMetaType::Void),
-        // Slot 'readSerialData'
+        // Slot 'on_btnConnectWizfi_clicked'
         QtMocHelpers::SlotData<void()>(7, 2, QMC::AccessPrivate, QMetaType::Void),
-        // Slot 'onSocketConnected'
+        // Slot 'on_btnConnectNucleo_clicked'
         QtMocHelpers::SlotData<void()>(8, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'readSerialData'
+        QtMocHelpers::SlotData<void()>(9, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'onSocketConnected'
+        QtMocHelpers::SlotData<void()>(10, 2, QMC::AccessPrivate, QMetaType::Void),
         // Slot 'onSocketError'
-        QtMocHelpers::SlotData<void(QAbstractSocket::SocketError)>(9, 2, QMC::AccessPrivate, QMetaType::Void, {{
-            { 0x80000000 | 10, 11 },
+        QtMocHelpers::SlotData<void(QAbstractSocket::SocketError)>(11, 2, QMC::AccessPrivate, QMetaType::Void, {{
+            { 0x80000000 | 12, 13 },
         }}),
     };
     QtMocHelpers::UintData qt_properties {
@@ -97,18 +103,20 @@ void MainWindow::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, 
         case 0: _t->loopSDL(); break;
         case 1: _t->SendVCP(); break;
         case 2: _t->SendWizfi(); break;
-        case 3: _t->on_btnConnectWizfi_clicked(); break;
-        case 4: _t->on_btnConnectNucleo_clicked(); break;
-        case 5: _t->readSerialData(); break;
-        case 6: _t->onSocketConnected(); break;
-        case 7: _t->onSocketError((*reinterpret_cast<std::add_pointer_t<QAbstractSocket::SocketError>>(_a[1]))); break;
+        case 3: _t->Simulation(); break;
+        case 4: _t->Control_and_Display(); break;
+        case 5: _t->on_btnConnectWizfi_clicked(); break;
+        case 6: _t->on_btnConnectNucleo_clicked(); break;
+        case 7: _t->readSerialData(); break;
+        case 8: _t->onSocketConnected(); break;
+        case 9: _t->onSocketError((*reinterpret_cast<std::add_pointer_t<QAbstractSocket::SocketError>>(_a[1]))); break;
         default: ;
         }
     }
     if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
         switch (_id) {
         default: *reinterpret_cast<QMetaType *>(_a[0]) = QMetaType(); break;
-        case 7:
+        case 9:
             switch (*reinterpret_cast<int*>(_a[1])) {
             default: *reinterpret_cast<QMetaType *>(_a[0]) = QMetaType(); break;
             case 0:
@@ -138,14 +146,14 @@ int MainWindow::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 8)
+        if (_id < 10)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 8;
+        _id -= 10;
     }
     if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 8)
+        if (_id < 10)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 8;
+        _id -= 10;
     }
     return _id;
 }
