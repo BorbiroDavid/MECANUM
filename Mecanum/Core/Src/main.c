@@ -67,9 +67,9 @@
 #define	MPWMRED_FACT	8				// Motor PWM reduction factor
 #define	MPWMPER_CTRF	(30.69 / 43.2)	// Motor PWM Period control factor
 
-#define	DCMCTST_IDLE	0x00			// Motor Ctrl State: Idle
+//#define	DCMCTST_IDLE	0x00			// Motor Ctrl State: Idle
 #define	DCMCTST_IGN		0x01			// Motor Ctrl State: Ignition bit mask
-#define	DCMCTST_BRAKE	0x02			// Motor Ctrl State: Brake bit mask
+//#define	DCMCTST_BRAKE	0x02			// Motor Ctrl State: Brake bit mask
 
 #define	LOCAL_MODE		0x00			// Local Mode identifier (default)
 #define	REMOTE_MODE		0x01			// Remote Mode  bit mask
@@ -92,12 +92,12 @@
 #define	MSERVO_PIPROP	4				// Motor Servo Control Type: Proportional with PI RPM
 #define MSERVO_LQG		5				// Motor Servo Control Type: LQG Optimal Control
 
-#define MC_RPM_PROP_GAIN	2.5			// Motor RPM Control Proportional Gain
+//#define MC_RPM_PROP_GAIN	2.5			// Motor RPM Control Proportional Gain
 #define MC_RPM_PI_GAIN		10.0		// Motor RPM Control PI Gain
 #define MC_RPM_PI_TI		16.0		// Motor RPM Control PI Integration Time
-#define MC_SRV_PROP_GAIN	10.0		// Motor Servo Control Proportional Gain
-#define MC_SRV_PIRPM_GAIN	10.0		// Motor Servo Control PIRPM Gain
-#define MC_SRV_PIRPM_TI		16.0		// Motor Servo Control PIRPM Integration Time
+//#define MC_SRV_PROP_GAIN	10.0		// Motor Servo Control Proportional Gain
+//#define MC_SRV_PIRPM_GAIN	10.0		// Motor Servo Control PIRPM Gain
+//#define MC_SRV_PIRPM_TI		16.0		// Motor Servo Control PIRPM Integration Time
 
 #define WINDUP_MAX		 32767.0		// Positive limit for PI anti-windup
 #define WINDUP_MIN		-32767.0		// Negative limit for PI anti-windup
@@ -115,6 +115,7 @@
 #define	TESTSIGN_SIZE	32768			// Test Signal size (max. 32768)
 #define	TESTDNLD_BLRATE	100				// Test Signal Blink Rate
 
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -123,6 +124,8 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+ADC_HandleTypeDef hadc1;
+
 SPI_HandleTypeDef hspi2;
 SPI_HandleTypeDef hspi3;
 DMA_HandleTypeDef hdma_spi3_rx;
@@ -139,13 +142,69 @@ UART_HandleTypeDef huart2;
 UART_HandleTypeDef huart6;
 
 /* USER CODE BEGIN PV */
+
+// Barni
+
+static uint16_t motorCtrlSt = 0;
+
+
+static int16_t motorActVal1 = 0;
+static int16_t motorActVal2 = 0;
+static int16_t motorActVal3 = 0;
+static int16_t motorActVal4 = 0;
+
+static int16_t motorActValBk = 0x7FFF;
+static int16_t motorActValBk1 = 0x7FFF;
+static int16_t motorActValBk2 = 0x7FFF;
+static int16_t motorActValBk3 = 0x7FFF;
+static int16_t motorActValBk4 = 0x7FFF;
+
+static int16_t motorActValPW1 = 0;
+static int16_t motorActValPW2 = 0;
+static int16_t motorActValPW3 = 0;
+static int16_t motorActValPW4 = 0;
+
+static uint16_t motorPWMtop = MPWMPER_MAX;
+static uint16_t motorPWMtop1 = MPWMPER_MAX;
+static uint16_t motorPWMtop2 = MPWMPER_MAX;
+
+static uint16_t motorPWMtopBk = MPWMPER_MAX;
+static uint16_t motorPWMtopBk1 = MPWMPER_MAX;
+static uint16_t motorPWMtopBk2 = MPWMPER_MAX;
+
+
+static uint16_t dcmCtrlSetp1 = 0;
+volatile uint16_t motorSpeed1 = 0;
+
+static uint16_t dcmCtrlSetp2 = 0;
+volatile uint16_t motorSpeed2 = 0;
+
+static uint16_t dcmCtrlSetp3 = 0;
+volatile uint16_t motorSpeed3 = 0;
+
+static uint16_t dcmCtrlSetp4 = 0;
+volatile uint16_t motorSpeed4 = 0;
+
+static float mcRPMPIGain = MC_RPM_PI_GAIN;
+static float mcRPMPITi = MC_RPM_PI_TI;
+
+static double xvalPI1 = 0.0;
+static double yvalPI1 = 0.0;
+static double xvalPI2 = 0.0;
+static double yvalPI2 = 0.0;
+static double xvalPI3 = 0.0;
+static double yvalPI3 = 0.0;
+static double xvalPI4 = 0.0;
+static double yvalPI4 = 0.0;
+
+//David
+
 /* Constant strings ----------------------------------------------------------*/
 
 const char programId[] = PROGRAM_ID; 		// Program Version ID string
 const char horLine28[]   = "----------------------------";   // Horizontal line for communication
 
 /* Private variables ----------------------------------------------------------*/
-
 volatile uint16_t secCnt = 0;				// Second Counter for SysTick
 volatile uint16_t secTick = 0;				// Second Tick signal
 volatile uint16_t mloopTick = 0;			// Main Loop Tick signal
@@ -171,7 +230,7 @@ static uint16_t testStop = OFF;
 uint8_t counter = 0;
 char tx_buffer[50];
 
-uint16_t N1 = 10, N2 = 0, N3 = 0, N4 = 0;
+//uint16_t N1 = 10, N2 = 0, N3 = 0, N4 = 0;
 
 /* USER CODE END PV */
 
@@ -189,6 +248,7 @@ static void MX_TIM4_Init(void);
 static void MX_TIM5_Init(void);
 static void MX_USART6_UART_Init(void);
 static void MX_TIM10_Init(void);
+static void MX_ADC1_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -206,6 +266,14 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
+
+	//PI variables
+	uint16_t pulse1, pulse2, pulse3, pulse4;
+	double xval1, xtmp1, yval1;
+	double xval2, xtmp2, yval2;
+	double xval3, xtmp3, yval3;
+	double xval4, xtmp4, yval4;
+
 	//int status;
 	char message[33];
 	memset(message, 0, sizeof(message));
@@ -225,25 +293,26 @@ int main(void)
   /* USER CODE END Init */
 
   /* Configure the system clock */
-  	SystemClock_Config();
+  SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
 
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
-	MX_GPIO_Init();
-	MX_DMA_Init();
-	MX_USART2_UART_Init();
-	MX_SPI2_Init();
-	MX_SPI3_Init();
-	MX_TIM1_Init();
-	MX_TIM2_Init();
-	MX_TIM3_Init();
-	MX_TIM4_Init();
-	MX_TIM5_Init();
-	MX_USART6_UART_Init();
-	MX_TIM10_Init();
+  MX_GPIO_Init();
+  MX_DMA_Init();
+  MX_USART2_UART_Init();
+  MX_SPI2_Init();
+  MX_SPI3_Init();
+  MX_TIM1_Init();
+  MX_TIM2_Init();
+  MX_TIM3_Init();
+  MX_TIM4_Init();
+  MX_TIM5_Init();
+  MX_USART6_UART_Init();
+  MX_TIM10_Init();
+  MX_ADC1_Init();
   /* USER CODE BEGIN 2 */
   //for (uint16_t k = 0; k < TESTSIGN_SIZE; k++) testSignal[k] = 0;
 
@@ -262,8 +331,32 @@ int main(void)
 	HAL_TIM_IC_Start_IT(&htim2,TIM_CHANNEL_1);
 	HAL_TIM_Base_Start(&htim4);
 	??????????????????????????????  */
-  /* USER CODE END 2 */
 
+/******	Initializing Motor PWM ********************************************/
+
+    // Left side
+    __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, 0);
+    __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_2, 0);
+    __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_3, 0);
+    __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_4, 0);
+    HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
+    HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_2);
+    HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_3);
+    HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_4);
+
+    // Right side
+    __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_1, 0);
+    __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_2, 0);
+    __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_3, 0);
+    __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_4, 0);
+    HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_1);
+    HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_2);
+    HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_3);
+    HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_4);
+
+
+
+  /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
@@ -292,11 +385,237 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 
+	  /*** Motor Control ***********************************/
+
+	  // Enable - Ignition ON - kell!!!!
+	  if ((motorCtrlSt & DCMCTST_IGN) > 0)
+	   { // Ignition ON
+		 HAL_GPIO_WritePin(MWC_EN_RL_GPIO_Port,MWC_EN_RL_Pin,GPIO_PIN_SET);
+		 HAL_GPIO_WritePin(MWCL_EN_FL_GPIO_Port,MWCL_EN_FL_Pin,GPIO_PIN_SET);
+		 HAL_GPIO_WritePin(MWC_EN_RR_GPIO_Port,MWC_EN_RR_Pin,GPIO_PIN_SET);
+		 HAL_GPIO_WritePin(MWC_EN_FR_GPIO_Port,MWC_EN_FR_Pin,GPIO_PIN_SET);
+
+		 // MCTRL_PI
+		 // MOTOR1
+		 xval1 = (double)(dcmCtrlSetp1 - motorSpeed1);
+		 xtmp1 = xval1 + xval1 / mcRPMPITi - xvalPI1;
+		 yval1 = yvalPI1 + mcRPMPIGain * xtmp1;
+		 if (yval1 > WINDUP_MAX)
+			 yval1 = WINDUP_MAX;
+		 else if (yval1 < WINDUP_MIN)
+			 yval1 = WINDUP_MIN;
+		 if (yval1 > (double)ACTVAL_MAX)
+			 motorActVal1 = ACTVAL_MAX;
+		 else if (yval1 < (double)ACTVAL_MIN)
+			 motorActVal1 = ACTVAL_MIN;
+		 else
+			 motorActVal1 = (int16_t)yval1;
+		 yvalPI1 = yval1;
+		 xvalPI1 = xval1;
+
+		 // MOTOR2
+		 xval2 = (double)(dcmCtrlSetp2 - motorSpeed2);
+		 xtmp2 = xval2 + xval2 / mcRPMPITi - xvalPI2;
+		 yval2 = yvalPI2 + mcRPMPIGain * xtmp2;
+		 if (yval2 > WINDUP_MAX)
+			 yval2 = WINDUP_MAX;
+		 else if (yval2 < WINDUP_MIN)
+			 yval2 = WINDUP_MIN;
+		 if (yval2 > (double)ACTVAL_MAX)
+			 motorActVal2 = ACTVAL_MAX;
+		 else if (yval2 < (double)ACTVAL_MIN)
+			 motorActVal2 = ACTVAL_MIN;
+		 else
+			 motorActVal2 = (int16_t)yval2;
+		 yvalPI2 = yval2;
+		 xvalPI2 = xval2;
+
+		 // MOTOR3
+		 xval3 = (double)(dcmCtrlSetp3 - motorSpeed3);
+		 xtmp3 = xval3 + xval3 / mcRPMPITi - xvalPI3;
+		 yval3 = yvalPI3 + mcRPMPIGain * xtmp3;
+		 if(yval3 > WINDUP_MAX)
+			yval3 = WINDUP_MAX;
+		 else if (yval3 < WINDUP_MIN)
+			 yval3 = WINDUP_MIN;
+		 if (yval3 > (double)ACTVAL_MAX)
+			 motorActVal3 = ACTVAL_MAX;
+		 else if (yval3 < (double)ACTVAL_MIN)
+			 motorActVal3 = ACTVAL_MIN;
+		 else
+			 motorActVal3 = (int16_t)yval3;
+		 yvalPI3 = yval3;
+		 xvalPI3 = xval3;
+
+		 // MOTOR4
+		 xval4 = (double)(dcmCtrlSetp4 - motorSpeed4);
+		 xtmp4 = xval4 + xval4 / mcRPMPITi - xvalPI4;
+		 yval4 = yvalPI4 + mcRPMPIGain * xtmp4;
+		 if(yval4 > WINDUP_MAX)
+			yval4 = WINDUP_MAX;
+		 else if (yval4 < WINDUP_MIN)
+			 yval4 = WINDUP_MIN;
+		 if (yval4 > (double)ACTVAL_MAX)
+			 motorActVal4 = ACTVAL_MAX;
+		 else if (yval4 < (double)ACTVAL_MIN)
+			 motorActVal4 = ACTVAL_MIN;
+		 else
+			 motorActVal4 = (int16_t)yval4;
+		 yvalPI4 = yval4;
+		 xvalPI4 = xval4;
+
+
+		 //Szétbontva 4 külön egységre
+		 // MOTOR1
+		 if (motorActVal1 != motorActValBk1)
+		   {
+			 motorActValPW1 = motorActVal1 / MPWMRED_FACT;
+			 if (motorPWMtop1 != motorPWMtopBk1)
+			   { // Action for PS Voltage correction
+				 __HAL_TIM_SET_AUTORELOAD(&htim1, motorPWMtop1 - 1);
+				 motorPWMtopBk1 = motorPWMtop1;
+			   }
+			 if (motorActValPW1 >= 0)
+			   {
+				 pulse1 = (uint16_t)motorActValPW1;
+				 __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, pulse1);
+				 __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_2, 0);
+			   }
+			 else
+			   {
+				 pulse1 = (uint16_t)(-motorActValPW1);
+				 __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, 0);
+				 __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_2, pulse1);
+			   }
+			 motorActValBk1 = motorActVal1;
+		   }
+
+		 // MOTOR2
+		 if (motorActVal2 != motorActValBk2)
+		   {
+			 motorActValPW2 = motorActVal2 / MPWMRED_FACT;
+			 if (motorPWMtop1 != motorPWMtopBk1)
+			   { // Action for PS Voltage correction
+				 __HAL_TIM_SET_AUTORELOAD(&htim1, motorPWMtop1 - 1);
+				 motorPWMtopBk1 = motorPWMtop1;
+			   }
+			 if (motorActValPW2 >= 0)
+			   {
+				 pulse2 = (uint16_t)motorActValPW2;
+				 __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_3, pulse2);
+				 __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_4, 0);
+			   }
+			 else
+			   {
+				 pulse2 = (uint16_t)(-motorActValPW2);
+				 __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_3, 0);
+				 __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_4, pulse2);
+			   }
+			 motorActValBk2 = motorActVal2;
+		   }
+
+		 // MOTOR3
+		 if (motorActVal3 != motorActValBk3)
+		   {
+			 motorActValPW3 = motorActVal3 / MPWMRED_FACT;
+			 if (motorPWMtop2 != motorPWMtopBk2)
+			   { // Action for PS Voltage correction
+				 __HAL_TIM_SET_AUTORELOAD(&htim4, motorPWMtop2 - 1);
+				 motorPWMtopBk2 = motorPWMtop2;
+			   }
+			 if (motorActValPW3 >= 0)
+			   {
+				 pulse3 = (uint16_t)motorActValPW3;
+				 __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_1, pulse3);
+				 __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_2, 0);
+			   }
+			 else
+			   {
+				 pulse3 = (uint16_t)(-motorActValPW3);
+				 __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_1, 0);
+				 __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_2, pulse3);
+			   }
+			 motorActValBk3 = motorActVal3;
+		   }
+
+		 // MOTOR4
+		 if (motorActVal4 != motorActValBk4)
+		   {
+			 motorActValPW4 = motorActVal4 / MPWMRED_FACT;
+			 if (motorPWMtop2 != motorPWMtopBk2)
+			   { // Action for PS Voltage correction
+				 __HAL_TIM_SET_AUTORELOAD(&htim4, motorPWMtop2 - 1);
+				 motorPWMtopBk2 = motorPWMtop2;
+			   }
+			 if (motorActValPW4 >= 0)
+			   {
+				 pulse4 = (uint16_t)motorActValPW4;
+				 __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_3, pulse4);
+				 __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_4, 0);
+			   }
+			 else
+			   {
+				 pulse4 = (uint16_t)(-motorActValPW4);
+				 __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_3, 0);
+				 __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_4, pulse4);
+			   }
+			 motorActValBk4 = motorActVal4;
+		   }
+	   }
+	  else
+	   { // Ignition OFF
+		 HAL_GPIO_WritePin(MWC_EN_RL_GPIO_Port,MWC_EN_RL_Pin,GPIO_PIN_RESET);
+		 HAL_GPIO_WritePin(MWCL_EN_FL_GPIO_Port,MWCL_EN_FL_Pin,GPIO_PIN_RESET);
+		 HAL_GPIO_WritePin(MWC_EN_RR_GPIO_Port,MWC_EN_RR_Pin,GPIO_PIN_RESET);
+		 HAL_GPIO_WritePin(MWC_EN_FR_GPIO_Port,MWC_EN_FR_Pin,GPIO_PIN_RESET);
+		 if ((motorActVal1 || motorActVal2 || motorActVal3 || motorActVal4) != 0 )
+		   {
+			 motorActVal1 = 0;
+			 motorActVal2 = 0;
+			 motorActVal3 = 0;
+			 motorActVal4 = 0;
+			 motorActValBk1 = 0x7FFF;
+			 motorActValBk2 = 0x7FFF;
+			 motorActValBk3 = 0x7FFF;
+			 motorActValBk4 = 0x7FFF;
+			 motorActValPW1 = 0;
+			 motorActValPW2 = 0;
+			 motorActValPW3 = 0;
+			 motorActValPW4 = 0;
+			 xvalPI1 = 0.0;
+			 xvalPI2 = 0.0;
+			 xvalPI3 = 0.0;
+			 xvalPI4 = 0.0;
+			 yvalPI1 = 0.0;
+			 yvalPI2 = 0.0;
+			 yvalPI3 = 0.0;
+			 yvalPI4 = 0.0;
+			 __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, 0);
+			 __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_2, 0);
+			 __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_3, 0);
+			 __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_4, 0);
+
+			 __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_1, 0);
+			 __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_2, 0);
+			 __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_3, 0);
+			 __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_4, 0);
+		   }
+		 if (motorCtrlSt != 0)
+		   {
+			 motorCtrlSt = 0;
+		   }
+	   }
+
+	  // Green led test
+	  HAL_GPIO_WritePin(GREEN_LED_GPIO_Port,GREEN_LED_Pin,GPIO_PIN_SET);
+	  HAL_Delay(1000);
+	  HAL_GPIO_WritePin(GREEN_LED_GPIO_Port,GREEN_LED_Pin,GPIO_PIN_RESET);
+	  HAL_Delay(1000);
 
 // Sending RPM to VCP
 	if (lockDataTrf == OFF)
 	  {
-		sprintf(message,"$C%04X%04X%04X%04X\r",N1,N2,N3,N4);
+		sprintf(message,"$C%04X%04X%04X%04X\r",dcmCtrlSetp1,dcmCtrlSetp2,dcmCtrlSetp3,dcmCtrlSetp4);
 		PutsUART2TxData((uint8_t *)message,strlen(message));
 		HAL_Delay(1000);
 
@@ -346,7 +665,7 @@ int main(void)
 					case 'C':{
 						if (inmsgPnt2 >= 18)
 						{
-							sscanf((char *)&inmsgBuf2[2], "%4hx%4hx%4hx%4hx", &N1, &N2, &N3, &N4);
+							sscanf((char *)&inmsgBuf2[2], "%4hx%4hx%4hx%4hx", &dcmCtrlSetp1, &dcmCtrlSetp2, &dcmCtrlSetp3, &dcmCtrlSetp4);
 						}
 						else
 						{
@@ -434,6 +753,75 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
+}
+
+/**
+  * @brief ADC1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_ADC1_Init(void)
+{
+
+  /* USER CODE BEGIN ADC1_Init 0 */
+
+  /* USER CODE END ADC1_Init 0 */
+
+  ADC_ChannelConfTypeDef sConfig = {0};
+  ADC_InjectionConfTypeDef sConfigInjected = {0};
+
+  /* USER CODE BEGIN ADC1_Init 1 */
+
+  /* USER CODE END ADC1_Init 1 */
+
+  /** Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion)
+  */
+  hadc1.Instance = ADC1;
+  hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV4;
+  hadc1.Init.Resolution = ADC_RESOLUTION_12B;
+  hadc1.Init.ScanConvMode = DISABLE;
+  hadc1.Init.ContinuousConvMode = DISABLE;
+  hadc1.Init.DiscontinuousConvMode = DISABLE;
+  hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
+  hadc1.Init.ExternalTrigConv = ADC_SOFTWARE_START;
+  hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
+  hadc1.Init.NbrOfConversion = 1;
+  hadc1.Init.DMAContinuousRequests = DISABLE;
+  hadc1.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
+  if (HAL_ADC_Init(&hadc1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
+  */
+  sConfig.Channel = ADC_CHANNEL_7;
+  sConfig.Rank = 1;
+  sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
+  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Configures for the selected ADC injected channel its corresponding rank in the sequencer and its sample time
+  */
+  sConfigInjected.InjectedChannel = ADC_CHANNEL_7;
+  sConfigInjected.InjectedRank = 1;
+  sConfigInjected.InjectedNbrOfConversion = 1;
+  sConfigInjected.InjectedSamplingTime = ADC_SAMPLETIME_15CYCLES;
+  sConfigInjected.ExternalTrigInjecConvEdge = ADC_EXTERNALTRIGINJECCONVEDGE_NONE;
+  sConfigInjected.ExternalTrigInjecConv = ADC_INJECTED_SOFTWARE_START;
+  sConfigInjected.AutoInjectedConv = DISABLE;
+  sConfigInjected.InjectedDiscontinuousConvMode = DISABLE;
+  sConfigInjected.InjectedOffset = 0;
+  if (HAL_ADCEx_InjectedConfigChannel(&hadc1, &sConfigInjected) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN ADC1_Init 2 */
+
+  /* USER CODE END ADC1_Init 2 */
+
 }
 
 /**
@@ -976,13 +1364,16 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(GREEN_LED_GPIO_Port, GREEN_LED_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(SENS_RST_GPIO_Port, SENS_RST_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOC, IMU_RST_Pin|MWC_EN_RR_Pin|MWC_EN_RL_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOB, RPSPI_NSS_FL_Pin|RPSPI_NSS_FR_Pin|RPSPI_NSS_RL_Pin|RPSPI_NSS_RR_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(SENS_NSS_GPIO_Port, SENS_NSS_Pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(GPIOB, YEL_LED_Pin|RED_LED_Pin|MWCL_EN_FL_Pin|MWC_EN_FR_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(IMU_NSS_GPIO_Port, IMU_NSS_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin : BLUE_SW_Pin */
   GPIO_InitStruct.Pin = BLUE_SW_Pin;
@@ -990,17 +1381,17 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(BLUE_SW_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : MWC_RR_RPSB_Pin MWC_RL_RPSB_Pin */
-  GPIO_InitStruct.Pin = MWC_RR_RPSB_Pin|MWC_RL_RPSB_Pin;
+  /*Configure GPIO pins : PC0 MWC_RPSB_RL_Pin */
+  GPIO_InitStruct.Pin = GPIO_PIN_0|MWC_RPSB_RL_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : MWC_FL_RPSB_Pin */
-  GPIO_InitStruct.Pin = MWC_FL_RPSB_Pin;
+  /*Configure GPIO pin : MWC_RPSB_FL_Pin */
+  GPIO_InitStruct.Pin = MWC_RPSB_FL_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(MWC_FL_RPSB_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(MWC_RPSB_FL_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : GREEN_LED_Pin */
   GPIO_InitStruct.Pin = GREEN_LED_Pin;
@@ -1009,24 +1400,24 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GREEN_LED_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : SENS_INT_Pin */
-  GPIO_InitStruct.Pin = SENS_INT_Pin;
+  /*Configure GPIO pin : IMU_INT_Pin */
+  GPIO_InitStruct.Pin = IMU_INT_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(SENS_INT_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(IMU_INT_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : SENS_RST_Pin */
-  GPIO_InitStruct.Pin = SENS_RST_Pin;
+  /*Configure GPIO pins : IMU_RST_Pin MWC_EN_RR_Pin MWC_EN_RL_Pin */
+  GPIO_InitStruct.Pin = IMU_RST_Pin|MWC_EN_RR_Pin|MWC_EN_RL_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-  HAL_GPIO_Init(SENS_RST_GPIO_Port, &GPIO_InitStruct);
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : MWC_FR_RPSB_Pin */
-  GPIO_InitStruct.Pin = MWC_FR_RPSB_Pin;
+  /*Configure GPIO pin : MWC_RPSB_FR_Pin */
+  GPIO_InitStruct.Pin = MWC_RPSB_FR_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(MWC_FR_RPSB_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(MWC_RPSB_FR_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : RPSPI_NSS_FL_Pin RPSPI_NSS_FR_Pin RPSPI_NSS_RL_Pin RPSPI_NSS_RR_Pin */
   GPIO_InitStruct.Pin = RPSPI_NSS_FL_Pin|RPSPI_NSS_FR_Pin|RPSPI_NSS_RL_Pin|RPSPI_NSS_RR_Pin;
@@ -1035,14 +1426,24 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : SENS_NSS_Pin */
-  GPIO_InitStruct.Pin = SENS_NSS_Pin;
+  /*Configure GPIO pins : YEL_LED_Pin RED_LED_Pin MWCL_EN_FL_Pin MWC_EN_FR_Pin */
+  GPIO_InitStruct.Pin = YEL_LED_Pin|RED_LED_Pin|MWCL_EN_FL_Pin|MWC_EN_FR_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : IMU_NSS_Pin */
+  GPIO_InitStruct.Pin = IMU_NSS_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-  HAL_GPIO_Init(SENS_NSS_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(IMU_NSS_GPIO_Port, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
+  HAL_NVIC_SetPriority(EXTI4_IRQn, 4, 0);
+  HAL_NVIC_EnableIRQ(EXTI4_IRQn);
+
   HAL_NVIC_SetPriority(EXTI15_10_IRQn, 8, 0);
   HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
 
@@ -1107,9 +1508,7 @@ void Error_Handler(void)
   }
   /* USER CODE END Error_Handler_Debug */
 }
-
-
-#ifdef  USE_FULL_ASSERT
+#ifdef USE_FULL_ASSERT
 /**
   * @brief  Reports the name of the source file and the source line number
   *         where the assert_param error has occurred.

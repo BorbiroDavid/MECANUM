@@ -83,6 +83,73 @@ void HAL_MspInit(void)
 }
 
 /**
+  * @brief ADC MSP Initialization
+  * This function configures the hardware resources used in this example
+  * @param hadc: ADC handle pointer
+  * @retval None
+  */
+void HAL_ADC_MspInit(ADC_HandleTypeDef* hadc)
+{
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
+  if(hadc->Instance==ADC1)
+  {
+    /* USER CODE BEGIN ADC1_MspInit 0 */
+
+    /* USER CODE END ADC1_MspInit 0 */
+    /* Peripheral clock enable */
+    __HAL_RCC_ADC1_CLK_ENABLE();
+
+    __HAL_RCC_GPIOA_CLK_ENABLE();
+    /**ADC1 GPIO Configuration
+    PA7     ------> ADC1_IN7
+    */
+    GPIO_InitStruct.Pin = PSENS_AIN_Pin;
+    GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    HAL_GPIO_Init(PSENS_AIN_GPIO_Port, &GPIO_InitStruct);
+
+    /* ADC1 interrupt Init */
+    HAL_NVIC_SetPriority(ADC_IRQn, 5, 0);
+    HAL_NVIC_EnableIRQ(ADC_IRQn);
+    /* USER CODE BEGIN ADC1_MspInit 1 */
+
+    /* USER CODE END ADC1_MspInit 1 */
+
+  }
+
+}
+
+/**
+  * @brief ADC MSP De-Initialization
+  * This function freeze the hardware resources used in this example
+  * @param hadc: ADC handle pointer
+  * @retval None
+  */
+void HAL_ADC_MspDeInit(ADC_HandleTypeDef* hadc)
+{
+  if(hadc->Instance==ADC1)
+  {
+    /* USER CODE BEGIN ADC1_MspDeInit 0 */
+
+    /* USER CODE END ADC1_MspDeInit 0 */
+    /* Peripheral clock disable */
+    __HAL_RCC_ADC1_CLK_DISABLE();
+
+    /**ADC1 GPIO Configuration
+    PA7     ------> ADC1_IN7
+    */
+    HAL_GPIO_DeInit(PSENS_AIN_GPIO_Port, PSENS_AIN_Pin);
+
+    /* ADC1 interrupt DeInit */
+    HAL_NVIC_DisableIRQ(ADC_IRQn);
+    /* USER CODE BEGIN ADC1_MspDeInit 1 */
+
+    /* USER CODE END ADC1_MspDeInit 1 */
+  }
+
+}
+
+/**
   * @brief SPI MSP Initialization
   * This function configures the hardware resources used in this example
   * @param hspi: SPI handle pointer
@@ -138,7 +205,7 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi)
     PC11     ------> SPI3_MISO
     PC12     ------> SPI3_MOSI
     */
-    GPIO_InitStruct.Pin = SENS_SCK_Pin|SENS_MISO_Pin|SENS_MOSI_Pin;
+    GPIO_InitStruct.Pin = IMU_SCK_Pin|IMU_MISO_Pin|IMU_MOSI_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
@@ -231,7 +298,7 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef* hspi)
     PC11     ------> SPI3_MISO
     PC12     ------> SPI3_MOSI
     */
-    HAL_GPIO_DeInit(GPIOC, SENS_SCK_Pin|SENS_MISO_Pin|SENS_MOSI_Pin);
+    HAL_GPIO_DeInit(GPIOC, IMU_SCK_Pin|IMU_MISO_Pin|IMU_MOSI_Pin);
 
     /* SPI3 DMA DeInit */
     HAL_DMA_DeInit(hspi->hdmarx);
@@ -327,19 +394,19 @@ void HAL_TIM_IC_MspInit(TIM_HandleTypeDef* htim_ic)
     PA15     ------> TIM2_CH1
     PB3     ------> TIM2_CH2
     */
-    GPIO_InitStruct.Pin = RPSA_MW3_Pin;
+    GPIO_InitStruct.Pin = MWC_RPSA_RL_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     GPIO_InitStruct.Alternate = GPIO_AF1_TIM2;
-    HAL_GPIO_Init(RPSA_MW3_GPIO_Port, &GPIO_InitStruct);
+    HAL_GPIO_Init(MWC_RPSA_RL_GPIO_Port, &GPIO_InitStruct);
 
-    GPIO_InitStruct.Pin = RPSA_MW4_Pin;
+    GPIO_InitStruct.Pin = MWC_RPSA_RR_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     GPIO_InitStruct.Alternate = GPIO_AF1_TIM2;
-    HAL_GPIO_Init(RPSA_MW4_GPIO_Port, &GPIO_InitStruct);
+    HAL_GPIO_Init(MWC_RPSA_RR_GPIO_Port, &GPIO_InitStruct);
 
     /* TIM2 interrupt Init */
     HAL_NVIC_SetPriority(TIM2_IRQn, 2, 0);
@@ -361,7 +428,7 @@ void HAL_TIM_IC_MspInit(TIM_HandleTypeDef* htim_ic)
     PA0-WKUP     ------> TIM5_CH1
     PA1     ------> TIM5_CH2
     */
-    GPIO_InitStruct.Pin = MWC_FL_RPSA_Pin|MWC_FR_RPSA_Pin;
+    GPIO_InitStruct.Pin = MWC_RPSA_FL_Pin|MWC_RPSA_FR_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -393,7 +460,7 @@ void HAL_TIM_MspPostInit(TIM_HandleTypeDef* htim)
     PA10     ------> TIM1_CH3
     PA11     ------> TIM1_CH4
     */
-    GPIO_InitStruct.Pin = MWC_FL_IN1_Pin|MWC_FL_IN2_Pin|MWC_FR_IN1_Pin|MWC_FR_IN1A11_Pin;
+    GPIO_InitStruct.Pin = MWC_IN1_FL_Pin|MWC_IN2_FL_Pin|MWC_IN1_FR_Pin|MWC_IN1_FRA11_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -411,16 +478,24 @@ void HAL_TIM_MspPostInit(TIM_HandleTypeDef* htim)
     /* USER CODE END TIM3_MspPostInit 0 */
 
     __HAL_RCC_GPIOA_CLK_ENABLE();
+    __HAL_RCC_GPIOC_CLK_ENABLE();
     /**TIM3 GPIO Configuration
     PA6     ------> TIM3_CH1
-    PA7     ------> TIM3_CH2
+    PC7     ------> TIM3_CH2
     */
-    GPIO_InitStruct.Pin = SENS_TC1_Pin|SENS_TC2_Pin;
+    GPIO_InitStruct.Pin = IMU_TC1_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     GPIO_InitStruct.Alternate = GPIO_AF2_TIM3;
-    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+    HAL_GPIO_Init(IMU_TC1_GPIO_Port, &GPIO_InitStruct);
+
+    GPIO_InitStruct.Pin = IMU_TC2_Pin;
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    GPIO_InitStruct.Alternate = GPIO_AF2_TIM3;
+    HAL_GPIO_Init(IMU_TC2_GPIO_Port, &GPIO_InitStruct);
 
     /* USER CODE BEGIN TIM3_MspPostInit 1 */
 
@@ -439,7 +514,7 @@ void HAL_TIM_MspPostInit(TIM_HandleTypeDef* htim)
     PB8     ------> TIM4_CH3
     PB9     ------> TIM4_CH4
     */
-    GPIO_InitStruct.Pin = MWC_RL_IN1_Pin|MWC_RL_IN2_Pin|MWC_RR_IN1_Pin|MWC_RR_IN2_Pin;
+    GPIO_InitStruct.Pin = MWC_IN1_RL_Pin|MWC_IN2_RL_Pin|MWC_IN1_RR_Pin|MWC_IN2_RR_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -547,9 +622,9 @@ void HAL_TIM_IC_MspDeInit(TIM_HandleTypeDef* htim_ic)
     PA15     ------> TIM2_CH1
     PB3     ------> TIM2_CH2
     */
-    HAL_GPIO_DeInit(RPSA_MW3_GPIO_Port, RPSA_MW3_Pin);
+    HAL_GPIO_DeInit(MWC_RPSA_RL_GPIO_Port, MWC_RPSA_RL_Pin);
 
-    HAL_GPIO_DeInit(RPSA_MW4_GPIO_Port, RPSA_MW4_Pin);
+    HAL_GPIO_DeInit(MWC_RPSA_RR_GPIO_Port, MWC_RPSA_RR_Pin);
 
     /* TIM2 interrupt DeInit */
     HAL_NVIC_DisableIRQ(TIM2_IRQn);
@@ -569,7 +644,7 @@ void HAL_TIM_IC_MspDeInit(TIM_HandleTypeDef* htim_ic)
     PA0-WKUP     ------> TIM5_CH1
     PA1     ------> TIM5_CH2
     */
-    HAL_GPIO_DeInit(GPIOA, MWC_FL_RPSA_Pin|MWC_FR_RPSA_Pin);
+    HAL_GPIO_DeInit(GPIOA, MWC_RPSA_FL_Pin|MWC_RPSA_FR_Pin);
 
     /* TIM5 interrupt DeInit */
     HAL_NVIC_DisableIRQ(TIM5_IRQn);
@@ -625,19 +700,27 @@ void HAL_UART_MspInit(UART_HandleTypeDef* huart)
     __HAL_RCC_USART6_CLK_ENABLE();
 
     __HAL_RCC_GPIOC_CLK_ENABLE();
+    __HAL_RCC_GPIOA_CLK_ENABLE();
     /**USART6 GPIO Configuration
     PC6     ------> USART6_TX
-    PC7     ------> USART6_RX
+    PA12     ------> USART6_RX
     */
-    GPIO_InitStruct.Pin = RFCOM_TX_Pin|RFCOM_RX_Pin;
+    GPIO_InitStruct.Pin = RFCOM_TX_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
     GPIO_InitStruct.Alternate = GPIO_AF8_USART6;
-    HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+    HAL_GPIO_Init(RFCOM_TX_GPIO_Port, &GPIO_InitStruct);
+
+    GPIO_InitStruct.Pin = RFCOM_RX_Pin;
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+    GPIO_InitStruct.Alternate = GPIO_AF8_USART6;
+    HAL_GPIO_Init(RFCOM_RX_GPIO_Port, &GPIO_InitStruct);
 
     /* USART6 interrupt Init */
-    HAL_NVIC_SetPriority(USART6_IRQn, 4, 0);
+    HAL_NVIC_SetPriority(USART6_IRQn, 6, 0);
     HAL_NVIC_EnableIRQ(USART6_IRQn);
     /* USER CODE BEGIN USART6_MspInit 1 */
 
@@ -684,9 +767,11 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* huart)
 
     /**USART6 GPIO Configuration
     PC6     ------> USART6_TX
-    PC7     ------> USART6_RX
+    PA12     ------> USART6_RX
     */
-    HAL_GPIO_DeInit(GPIOC, RFCOM_TX_Pin|RFCOM_RX_Pin);
+    HAL_GPIO_DeInit(RFCOM_TX_GPIO_Port, RFCOM_TX_Pin);
+
+    HAL_GPIO_DeInit(RFCOM_RX_GPIO_Port, RFCOM_RX_Pin);
 
     /* USART6 interrupt DeInit */
     HAL_NVIC_DisableIRQ(USART6_IRQn);
