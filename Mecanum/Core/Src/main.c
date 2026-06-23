@@ -143,6 +143,16 @@ UART_HandleTypeDef huart6;
 
 /* USER CODE BEGIN PV */
 
+// Soma
+
+volatile uint32_t rpsmCapt1, rpsmCapt2, rpsmCapt3, rpsmCapt4 = 0;			// Motor Captured value of RPS
+volatile int32_t rpsmVal1, rpsmVal2, rpsmVal3, rpsmVal4 = 0;				// Motor RPS measured value
+volatile int32_t nperAcc1, nperAcc2, nperAcc3, nperAcc4 = 0;				// Motor Period Number accumulator
+volatile uint32_t nperCnt1, nperCnt2, nperCnt3, nperCnt4 = 0;				// Motor Period Number counter
+volatile int16_t rpsNoPulse1, rpsNoPulse2, rpsNoPulse3, rpsNoPulse4 = 0;	// Motor Number of periods without pulses
+
+
+
 // Barni
 
 static uint16_t motorCtrlSt = 0;
@@ -267,6 +277,9 @@ int main(void)
 
   /* USER CODE BEGIN 1 */
 
+	float npaval = 0.0;
+	uint32_t prim;
+
 	//PI variables
 	uint16_t pulse1, pulse2, pulse3, pulse4;
 	double xval1, xtmp1, yval1;
@@ -386,6 +399,113 @@ int main(void)
     /* USER CODE BEGIN 3 */
 
 	  /*** Motor Control ***********************************/
+
+	  // Soma kezdet
+
+	  // RPM Sampling
+
+	  ctrlLoopCnt++;
+
+	  if (ctrlLoopCnt >= samplePeriod)
+	  {
+
+		  ctrlLoopCnt = 0;
+	      uint32_t n_cnt;
+	      int32_t n_acc;
+		// 1.
+		if (nperCnt1 > 0)
+		{
+			prim = __get_PRIMASK();
+			__disable_irq();
+			n_cnt = nperCnt1;
+			n_acc = nperAcc1;
+			nperAcc1 = 0; nperCnt1 = 0;
+			if (!prim) __enable_irq();
+
+			npaval = (n_cnt > 1) ? (float)n_acc / (float)n_cnt : (float)n_acc;
+			rpsmVal1 = (int32_t)(RPS_FACTOR / npaval);
+			rpsNoPulse1 = 0;
+		}
+		else
+		{
+			if (rpsmVal1 != 0) {
+				rpsNoPulse1++;
+				if (rpsNoPulse1 > 2) rpsmVal1 /= 2;
+			}
+		}
+		motorSpeed1 = (int16_t)rpsmVal1;
+
+		// 2.
+		if (nperCnt2 > 0)
+		{
+			prim = __get_PRIMASK();
+			__disable_irq();
+			n_cnt = nperCnt2;
+			n_acc = nperAcc2;
+			nperAcc2 = 0; nperCnt2 = 0;
+			if (!prim) __enable_irq();
+
+			npaval = (n_cnt > 1) ? (float)n_acc / (float)n_cnt : (float)n_acc;
+			rpsmVal2 = (int32_t)(RPS_FACTOR / npaval);
+			rpsNoPulse2 = 0;
+		}
+		else
+		{
+			if (rpsmVal2 != 0) {
+				rpsNoPulse2++;
+				if (rpsNoPulse2 > 2) rpsmVal2 /= 2;
+			}
+		}
+		motorSpeed2 = (int16_t)rpsmVal2;
+
+		// 3.
+		if (nperCnt3 > 0)
+		{
+			prim = __get_PRIMASK();
+			__disable_irq();
+			n_cnt = nperCnt3;
+			n_acc = nperAcc3;
+			nperAcc3 = 0; nperCnt3 = 0;
+			if (!prim) __enable_irq();
+
+			npaval = (n_cnt > 1) ? (float)n_acc / (float)n_cnt : (float)n_acc;
+			rpsmVal3 = (int32_t)(RPS_FACTOR / npaval);
+			rpsNoPulse3 = 0;
+		}
+		else
+		{
+			if (rpsmVal3 != 0) {
+				rpsNoPulse3++;
+				if (rpsNoPulse3 > 2) rpsmVal3 /= 2;
+			}
+		}
+		motorSpeed3 = (int16_t)rpsmVal3;
+
+		// 4.
+		if (nperCnt4 > 0)
+		{
+			prim = __get_PRIMASK();
+			__disable_irq();
+			n_cnt = nperCnt4;
+			n_acc = nperAcc4;
+			nperAcc4 = 0; nperCnt4 = 0;
+			if (!prim) __enable_irq();
+
+			npaval = (n_cnt > 1) ? (float)n_acc / (float)n_cnt : (float)n_acc;
+			rpsmVal4 = (int32_t)(RPS_FACTOR / npaval);
+			rpsNoPulse4 = 0;
+		}
+		else
+		{
+			if (rpsmVal4 != 0) {
+				rpsNoPulse4++;
+				if (rpsNoPulse4 > 2) rpsmVal4 /= 2;
+			}
+		}
+		motorSpeed4 = (int16_t)rpsmVal4;
+
+		// Soma vége
+
 
 	  // Enable - Ignition ON - kell!!!!
 	  if ((motorCtrlSt & DCMCTST_IGN) > 0)
@@ -605,6 +725,8 @@ int main(void)
 			 motorCtrlSt = 0;
 		   }
 	   }
+
+	  } // ctrlloopcnt if vége
 
 	  // Green led test
 	  HAL_GPIO_WritePin(GREEN_LED_GPIO_Port,GREEN_LED_Pin,GPIO_PIN_SET);
@@ -1453,6 +1575,99 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+
+// Soma kezdet
+
+// 1. IDŐZÍTŐ CALLBACK (1 ms-os ütemezés a TIM10-ből)
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+    if (htim->Instance == TIM10)
+    {
+        mloopTick++;
+}
+
+void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
+{
+    uint32_t captval;
+    int32_t npincr;
+    uint8_t rpsmdir;
+
+    // --- TIM2: 1. és 2. Motor (FL és FR) ---
+    if (htim->Instance == TIM2)
+    {
+        // 1. Motor (FL - Front Left) -> TIM2 Channel 1
+        if (htim->Channel == HAL_TIM_ACTIVE_CHANNEL_1)
+        {
+            captval = __HAL_TIM_GET_COMPARE(htim, TIM_CHANNEL_1);
+
+            rpsmdir = (uint8_t)HAL_GPIO_ReadPin(MWC_RPSB_FL_GPIO_Port, MWC_RPSB_FL_Pin);
+
+            if (captval < rpsmCapt1)
+                npincr = (int32_t)(0xFFFFFFFF - rpsmCapt1 + captval + 1);
+            else
+                npincr = (int32_t)(captval - rpsmCapt1);
+
+            if (rpsmdir == 0) nperAcc1 += npincr; else nperAcc1 -= npincr;
+            nperCnt1++;
+            rpsmCapt1 = captval;
+        }
+        // 2. Motor (FR - Front Right) -> TIM2 Channel 2
+        else if (htim->Channel == HAL_TIM_ACTIVE_CHANNEL_2)
+        {
+            captval = __HAL_TIM_GET_COMPARE(htim, TIM_CHANNEL_2);
+
+            rpsmdir = (uint8_t)HAL_GPIO_ReadPin(MWC_RPSB_FR_GPIO_Port, MWC_RPSB_FR_Pin);
+
+            if (captval < rpsmCapt2)
+                npincr = (int32_t)(0xFFFFFFFF - rpsmCapt2 + captval + 1);
+            else
+                npincr = (int32_t)(captval - rpsmCapt2);
+
+            if (rpsmdir == 0) nperAcc2 += npincr; else nperAcc2 -= npincr;
+            nperCnt2++;
+            rpsmCapt2 = captval;
+        }
+    }
+
+    // --- TIM5: 3. és 4. Motor (RL és RR) ---
+    else if (htim->Instance == TIM5)
+    {
+        // 3. Motor (RL - Rear Left) -> TIM5 Channel 1
+        if (htim->Channel == HAL_TIM_ACTIVE_CHANNEL_1)
+        {
+            captval = __HAL_TIM_GET_COMPARE(htim, TIM_CHANNEL_1);
+
+            rpsmdir = (uint8_t)HAL_GPIO_ReadPin(MWC_RPSB_RL_GPIO_Port, MWC_RPSB_RL_Pin);
+
+            if (captval < rpsmCapt3)
+                npincr = (int32_t)(0xFFFFFFFF - rpsmCapt3 + captval + 1);
+            else
+                npincr = (int32_t)(captval - rpsmCapt3);
+
+            if (rpsmdir == 0) nperAcc3 += npincr; else nperAcc3 -= npincr;
+            nperCnt3++;
+            rpsmCapt3 = captval;
+        }
+        // 4. Motor (RR - Rear Right) -> TIM5 Channel 2
+        else if (htim->Channel == HAL_TIM_ACTIVE_CHANNEL_2)
+        {
+            captval = __HAL_TIM_GET_COMPARE(htim, TIM_CHANNEL_2);
+
+            rpsmdir = (uint8_t)HAL_GPIO_ReadPin(MWC_RPSB_RR_GPIO_Port, MWC_RPSB_RR_Pin);
+
+            if (captval < rpsmCapt4)
+                npincr = (int32_t)(0xFFFFFFFF - rpsmCapt4 + captval + 1);
+            else
+                npincr = (int32_t)(captval - rpsmCapt4);
+
+            if (rpsmdir == 0) nperAcc4 += npincr; else nperAcc4 -= npincr;
+            nperCnt4++;
+            rpsmCapt4 = captval;
+        }
+    }
+}
+
+// Soma vége
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {

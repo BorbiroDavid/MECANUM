@@ -108,6 +108,10 @@ void SendMessageLine (char *message);
 #define BLUE_SW_EXTI_IRQn EXTI15_10_IRQn
 #define MWC_RPSB_RL_Pin GPIO_PIN_1
 #define MWC_RPSB_RL_GPIO_Port GPIOC
+
+#define MWC_RPSB_RR_Pin GPIO_PIN_0
+#define MWC_RPSB_RR_GPIO_Port GPIOC
+
 #define RPSPI_MISO_Pin GPIO_PIN_2
 #define RPSPI_MISO_GPIO_Port GPIOC
 #define RPSPI_MOSI_Pin GPIO_PIN_3
