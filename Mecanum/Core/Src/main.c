@@ -41,6 +41,7 @@
 #define	CTRLOOP_PER		10				// Control Loop Period (x TIM10 T)
 #define	STATTRF_PER		50				// State Transfer Period (x TIM10 T)
 #define	VBAT_SMP_PER	2				// Vbat Sampling Period (secTick nbr.)
+#define samplePeriod    50
 
 #define SWB_STATE		0x0001			// Bit Mask for Switch Blue State
 #define SW1_STATE		0x0002			// Bit Mask for Switch 1 State
@@ -836,7 +837,7 @@ int main(void)
   * @brief System Clock Configuration
   * @retval None
   */
-void SystemClock_Config(void)
+void SystemClock_Config()
 {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
@@ -1584,6 +1585,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     if (htim->Instance == TIM10)
     {
         mloopTick++;
+    }
 }
 
 void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
