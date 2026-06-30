@@ -401,10 +401,35 @@ int main(void)
 
 	  /*** Motor Control ***********************************/
 
+	  HAL_GPIO_WritePin(MWC_EN_RL_GPIO_Port,MWC_EN_RL_Pin,GPIO_PIN_SET);
+	  		 HAL_GPIO_WritePin(MWCL_EN_FL_GPIO_Port,MWCL_EN_FL_Pin,GPIO_PIN_SET);
+	  		 HAL_GPIO_WritePin(MWC_EN_RR_GPIO_Port,MWC_EN_RR_Pin,GPIO_PIN_SET);
+	  		 HAL_GPIO_WritePin(MWC_EN_FR_GPIO_Port,MWC_EN_FR_Pin,GPIO_PIN_SET);
+
+	  motorActValPW4 =  dcmCtrlSetp4 / MPWMRED_FACT;
+	  		 pulse4 = (uint16_t)motorActValPW4;
+	  			 __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_3, pulse4);
+	  			 __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_4, 0);
+
+	  motorActValPW3 =  dcmCtrlSetp3 / MPWMRED_FACT;
+		 pulse3 = (uint16_t)motorActValPW3;
+			 __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_1, pulse3);
+			 __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_2, 0);
+
+	 motorActValPW2 =  dcmCtrlSetp2 / MPWMRED_FACT;
+				 pulse2 = (uint16_t)motorActValPW2;
+					 __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, pulse2);
+					 __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_2, 0);
+
+	 motorActValPW1 =  dcmCtrlSetp1 / MPWMRED_FACT;
+					 pulse1 = (uint16_t)motorActValPW1;
+						 __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_3, pulse1);
+						 __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_4, 0);
+
 	  // Soma kezdet
 
 	  // RPM Sampling
-
+	  /*
 	  ctrlLoopCnt++;
 
 	  if (ctrlLoopCnt >= samplePeriod)
@@ -508,9 +533,9 @@ int main(void)
 		// Soma vége
 
 
-	  // Enable - Ignition ON - kell!!!!
-	  if ((motorCtrlSt & DCMCTST_IGN) > 0)
-	   { // Ignition ON
+	  // Enable - Ignition ON - kell!!!! -----------MÉG NINCS-----------
+	  if(1) //((motorCtrlSt & DCMCTST_IGN) > 0)
+	  { // Ignition ON
 		 HAL_GPIO_WritePin(MWC_EN_RL_GPIO_Port,MWC_EN_RL_Pin,GPIO_PIN_SET);
 		 HAL_GPIO_WritePin(MWCL_EN_FL_GPIO_Port,MWCL_EN_FL_Pin,GPIO_PIN_SET);
 		 HAL_GPIO_WritePin(MWC_EN_RR_GPIO_Port,MWC_EN_RR_Pin,GPIO_PIN_SET);
@@ -683,8 +708,8 @@ int main(void)
 			 motorActValBk4 = motorActVal4;
 		   }
 	   }
-	  else
-	   { // Ignition OFF
+	  //else
+	  // { // Ignition OFF
 		 HAL_GPIO_WritePin(MWC_EN_RL_GPIO_Port,MWC_EN_RL_Pin,GPIO_PIN_RESET);
 		 HAL_GPIO_WritePin(MWCL_EN_FL_GPIO_Port,MWCL_EN_FL_Pin,GPIO_PIN_RESET);
 		 HAL_GPIO_WritePin(MWC_EN_RR_GPIO_Port,MWC_EN_RR_Pin,GPIO_PIN_RESET);
@@ -725,9 +750,11 @@ int main(void)
 		   {
 			 motorCtrlSt = 0;
 		   }
-	   }
+	   //}
 
 	  } // ctrlloopcnt if vége
+
+	  */
 
 	  // Green led test
 	  HAL_GPIO_WritePin(GREEN_LED_GPIO_Port,GREEN_LED_Pin,GPIO_PIN_SET);

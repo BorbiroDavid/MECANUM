@@ -18,9 +18,9 @@
 #define mech_R 0.054
 
 //Bemenetek skálázó faktorai reális sebességekért
-#define vx_scaler 10000.0
-#define vy_scaler 10000.0
-#define w_scaler 10000.0
+#define vx_scaler 100000.0
+#define vy_scaler 100000.0
+#define w_scaler 100000.0
 
 #define RPS_Factor 1344 // Scale factor between rps and period
 
@@ -42,17 +42,17 @@ float w3 = 0.0;
 float w4 = 0.0;
 
 //Skálázott fordulatszámok
-Sint16 N1_out = 0, N1_in =0;
-Sint16 N2_out = 0, N2_in =0;
-Sint16 N3_out = 0, N3_in =0;
-Sint16 N4_out = 0, N4_in =0;
+qint16 N1_out = 0, N1_in =0;
+qint16 N2_out = 0, N2_in =0;
+qint16 N3_out = 0, N3_in =0;
+qint16 N4_out = 0, N4_in =0;
 
-Sint16 Wizfi_Active = 0;
+qint16 Wizfi_Active = 0;
 
-Sint16 ctrlr_lx = 0;
-Sint16 ctrlr_ly = 0;
-Sint16 ctrlr_rx = 0;
-Sint16 ctrlr_ry = 0;
+qint16 ctrlr_lx = 0;
+qint16 ctrlr_ly = 0;
+qint16 ctrlr_rx = 0;
+qint16 ctrlr_ry = 0;
 
 
 QString message;
@@ -354,10 +354,10 @@ void MainWindow::Control_and_Display(){
     w3 = 1 / mech_R * (-vx + vy - (mech_lx+mech_ly) * w_z);
     w4 = 1 / mech_R * (vx + vy + (mech_lx+mech_ly) * w_z);
 
-    N1_out =  Sint16(trunc(w1 * RPS_Factor));
-    N2_out =  Sint16(trunc(w2 * RPS_Factor));
-    N3_out =  Sint16(trunc(w3 * RPS_Factor));
-    N4_out =  Sint16(trunc(w4 * RPS_Factor));
+    N1_out =  qint16(trunc(w1 * RPS_Factor));
+    N2_out =  qint16(trunc(w2 * RPS_Factor));
+    N3_out =  qint16(trunc(w3 * RPS_Factor));
+    N4_out =  qint16(trunc(w4 * RPS_Factor));
 
     ui->LCDLeftX->display(ctrlr_lx);
     ui->LCDLeftY->display(ctrlr_ly);
